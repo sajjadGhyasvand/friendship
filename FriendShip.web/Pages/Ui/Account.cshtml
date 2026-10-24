@@ -1,0 +1,28 @@
+@page "/Ui/Account"
+@model FriendShip.Web.Pages.Ui.AccountModel
+@{ ViewData["Title"] = "شروع بازی"; ViewData["PageKind"] = "account"; }
+<div class="narrow-page">
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <section class="card"><h1>سلام @User.Identity.Name</h1><a class="button button-primary" asp-page="/Ui/Game/Index">بازی من</a><form method="post" asp-page="/Ui/Logout"><button class="button button-outline">خروج امن</button></form></section>
+}
+else
+{
+    <div asp-validation-summary="All" class="form-errors" role="alert"></div>
+    <section class="card form-card"><img class="account-sticker" src="~/images/avatars/friendship-boy.small.png" width="70" height="74" alt="" /><span class="eyebrow">بیا یه بازی راه بندازیم!</span><h1>رفقات منتظرن</h1><p>یه نام کاربری و رمز انتخاب کن؛ نتیجه‌های رفیقات اینجا منتظرت می‌مونن.</p>
+    <form method="post" asp-page-handler="Register">
+        <input name="ReturnUrl" type="hidden" value="@Model.ReturnUrl" />
+        <div class="field"><label for="register-name">نام کاربری</label><input class="input" id="register-name" name="Input.Email" value="@(Model.RegisterMode ? Model.Input.Email : "")" autocomplete="username" minlength="3" maxlength="30" required /><small>۳ تا ۳۰ حرف، عدد یا زیرخط. نام نمایشی‌ات را بعداً می‌تونی تغییر بدی.</small></div>
+        <div class="field"><label for="register-password">رمز عبور</label><input class="input" id="register-password" name="Input.Password" type="password" autocomplete="new-password" minlength="8" maxlength="100" required /><small>حداقل ۸ نویسه؛ بهتره برای این حساب رمز متفاوتی داشته باشی.</small></div>
+        <button class="button button-primary button-block">ساخت حساب و ادامه ←</button>
+    </form></section>
+    <details class="card section" open="@(!Model.RegisterMode && !ViewData.ModelState.IsValid)"><summary>قبلاً حساب ساختی؟ وارد شو</summary>
+    <form method="post" asp-page-handler="Login">
+        <input name="ReturnUrl" type="hidden" value="@Model.ReturnUrl" />
+        <div class="field"><label for="login-name">نام کاربری یا ایمیل حساب قدیمی</label><input class="input" id="login-name" name="Input.Email" value="@(!Model.RegisterMode ? Model.Input.Email : "")" autocomplete="username" maxlength="254" required /></div>
+        <div class="field"><label for="login-password">رمز عبور</label><input class="input" id="login-password" name="Input.Password" type="password" autocomplete="current-password" maxlength="100" required /></div>
+        <button class="button button-primary">ورود</button><a class="text-link" asp-page="/Ui/Recovery">رمزم یادم نیست</a>
+    </form></details>
+    <p class="field-hint">ایمیل لازم نیست. بعد از ثبت‌نام یک کد بازیابی خصوصی می‌گیری؛ آن را در جای امن نگه دار.</p>
+}
+</div>

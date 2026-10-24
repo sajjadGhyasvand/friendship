@@ -1,0 +1,27 @@
+@page
+@model FriendShip.Web.Pages.Ui.Rooms.JoinModel
+@{ ViewData["Title"] = Model.Game is { } game ? "چالش شناخت " + game.OwnerName : "ورود به بازی"; ViewData["PageKind"] = "join"; }
+<div class="narrow-page"><section class="card join-card">
+    <div class="join-portrait" aria-hidden="true"><img src="~/images/avatars/friendship-cat.small.png" width="155" height="161" alt="" /><span class="join-star">✦</span></div>
+    <span class="eyebrow">دعوتی به یه چالش رفاقتی</span>
+    <h1>@(Model.Game is { } info ? info.OwnerName + " رو چقدر می‌شناسی؟" : "آماده‌ای رفیقت رو غافلگیر کنی؟")</h1>
+    <p>انتخاب‌های دوستت رو حدس بزن؛ شاید جواب‌ها غافلگیرت کنن!</p>
+    <div class="welcome-facts">@if (Model.Game is { } facts) { <span>@facts.QuestionCount سؤال کوتاه</span> }<span>بدون ثبت‌نام</span><span>فقط برای خوش‌گذرونی</span></div>
+    @if (Model.Game?.IsOwner == true)
+    { <p class="notice">این بازی خودته؛ لینک رو برای دوستات بفرست.</p><a class="button button-primary" asp-page="/Ui/Game/Index">بازی من</a> }
+    else if (Model.Game is { Status: not FriendShip.Domain.Rooms.RoomStatus.Open })
+    { <p class="notice">این بازی الان پاسخ جدید نمی‌گیره؛ ممکنه موقتاً متوقف شده یا دورش پایان یافته باشه.</p><a class="text-link" asp-page="/Ui/Play" asp-route-code="@Model.Code">مشاهده نتیجه یا ادامه قبلی</a> }
+    else
+    {
+        <form method="post">
+            <div asp-validation-summary="All" class="form-errors" role="alert"></div>
+            @if (Model.Game is not null) { <input asp-for="Code" type="hidden" /> }
+            else { <div class="field"><label asp-for="Code">کد بازی</label><input asp-for="Code" class="input" dir="ltr" maxlength="100" required /></div> }
+            <input asp-for="AvatarKey" type="hidden" />
+            <div class="field"><label asp-for="DisplayName">با چه اسمی صدات کنیم؟</label><input asp-for="DisplayName" class="input" placeholder="مثلاً: رفیق قدیمی" autocomplete="nickname" dir="auto" minlength="2" maxlength="30" required /><small>همین اسم توی نتیجه‌ها دیده می‌شه؛ ۲ تا ۳۰ حرف.</small></div>
+            <button class="button button-primary button-block">چالش رو قبول می‌کنم <svg class="icon"><use href="#i-arrow" /></svg></button>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(Model.Code)) { <a class="text-link" asp-page="/Ui/Play" asp-route-code="@Model.Code">قبلاً شروع کردم؛ بریم ادامه‌اش</a> }
+    }
+    <p class="field-hint">جواب‌هات توی همین مرورگر محفوظ می‌مونن. با پاک کردن کوکی، دسترسی به بازی قبلی رو از دست می‌دی.</p>
+</section></div>

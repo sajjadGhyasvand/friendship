@@ -1,0 +1,24 @@
+@page
+@model FriendShip.Web.Pages.Ui.RecoveryModel
+@{ ViewData["Title"] = "بازیابی حساب"; }
+<div class="narrow-page card">
+    <h1>برگرد به بازی خودت</h1>
+    @if (Model.NewCode is not null)
+    {
+        <p role="status">رمزت تغییر کرد و نشست‌های قبلی بسته شدند. کد قبلی دیگر قابل استفاده نیست؛ این کد تازه را در جای امن نگه دار.</p>
+        <code class="recovery-code" dir="ltr">@Model.NewCode</code>
+        <a asp-page="/Ui/Account" class="button button-primary">ورود با رمز جدید</a>
+    }
+    else
+    {
+        <p>با کد بازیابی که موقع ساخت حساب گرفتی، رمز تازه بساز.</p>
+        <form method="post">
+            <div asp-validation-summary="All" role="alert"></div>
+            <div class="field"><label asp-for="UserName">نام کاربری</label><input asp-for="UserName" class="input" autocomplete="username" maxlength="30" required /></div>
+            <div class="field"><label asp-for="Code">کد بازیابی ۲۴ کاراکتری</label><input asp-for="Code" class="input" dir="ltr" autocomplete="off" maxlength="24" required /></div>
+            <div class="field"><label asp-for="Password">رمز جدید</label><input asp-for="Password" type="password" class="input" autocomplete="new-password" minlength="8" maxlength="100" required /></div>
+            <button class="button button-primary">بازیابی حساب</button>
+        </form>
+        <p class="field-hint">برای حساب‌های قدیمی ایمیلی، این روش فقط پس از تعریف کد بازیابی قابل استفاده است.</p>
+    }
+</div>

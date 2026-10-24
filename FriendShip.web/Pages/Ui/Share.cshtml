@@ -1,0 +1,24 @@
+@page
+@model FriendShip.Web.Pages.Ui.ShareModel
+@{ ViewData["Title"] = "کارت رفاقت"; ViewData["PageKind"] = "share"; }
+<div class="public-share-shell">
+@if (Model.SharedResult is { } result)
+{
+    var shareUrl = Url.Page("/Ui/Share", null, new { shareCode = Model.ShareCode }, Request.Scheme)!;
+    <section class="result-celebration public-share-card story-preview">
+        <span class="eyebrow"><svg class="icon"><use href="#i-heart" /></svg> کارت رفاقت</span><h1>چقدر منو می‌شناسی؟</h1>
+        <p><strong>@result.ParticipantName</strong> در چالش شناخت <strong>@result.OwnerName</strong></p>
+        <div class="result-stage"><div class="score-ring"><div class="score-ring-inner"><strong>@result.Percent٪</strong><span>حدس درست</span></div></div><img class="result-mascot" src="~/images/avatars/friendship-boy.small.png" width="108" height="115" alt="ماسکات خوشحال بازی" /></div>
+        <span class="result-tier">@result.TierTitle</span><p class="result-message">@result.TierMessage</p>
+        <p>@result.Correct پاسخ درست از @(result.Comparable ?? result.Total) پاسخ قابل محاسبه · @result.Total سؤال در این دور</p>
+    </section>
+    <div class="live-actions"><button class="button button-primary" type="button" data-story-card data-card-name="@result.ParticipantName" data-card-owner="@result.OwnerName" data-card-percent="@result.Percent" data-card-message="@result.Correct پاسخ درست از @(result.Comparable ?? result.Total) پاسخ قابل محاسبه؛ @result.Total سؤال در این دور" data-card-url="@shareUrl" data-card-mascot="@Url.Content("~/images/avatars/friendship-boy.small.png")">دانلود تصویر استوری</button><p data-card-status role="status"></p></div>
+    <p class="field-hint">این کارت عمومی است؛ نام نمایشی، نام صاحب بازی و درصد را نشان می‌دهد. پاسخ‌ها نمایش داده نمی‌شوند.</p>
+    <a class="button button-outline" asp-page="/Ui/Game/Index">تو هم بازی خودت رو بساز</a>
+}
+else
+{
+    <section class="card"><h1>کارت پیدا نشد</h1><p role="alert">@Model.ErrorMessage</p><a class="text-link" asp-page="/Ui/Index">برگشت به خانه</a></section>
+}
+</div>
+@section Scripts { <script src="~/friendship/story-card.js" asp-append-version="true" defer></script> }

@@ -1,0 +1,18 @@
+﻿@page "/Ui/Logout"
+@model FriendShip.Web.Pages.Ui.LogoutModel
+
+@{
+    ViewData["Title"] = "خروج از حساب";
+}
+
+<section class="card">
+    <h1>از حساب خارج می‌شی؟</h1>
+
+    <form method="post">
+        @Html.AntiForgeryToken()
+
+        <button class="button button-primary" type="submit">
+            خروج از حساب
+        </button>
+    </form>
+</section>

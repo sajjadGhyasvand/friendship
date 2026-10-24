@@ -1,0 +1,22 @@
+@page
+@model FriendShip.Web.Pages.Ui.Discover.QuestionModel
+@{ ViewData["Title"] = "یک انتخاب تازه"; ViewData["PageKind"] = "create"; }
+<div class="quiz-shell">
+<div class="play-topline"><a asp-page="Index" class="text-link">کشف من</a><span>@Model.View.Analysis!.Evidence.Count انتخاب ثبت‌شده</span></div>
+@if (Model.Notice is not null) { <p class="notice" role="status">@Model.Notice</p> }
+@if (Model.Question is { } question)
+{
+    <span class="category-pill">@question.Icon @question.Category</span>
+    <section class="live-quiz"><div class="question-scene"><span class="eyebrow">این بار درباره خودت</span><h1>@question.Prompt</h1><span class="question-sticker" aria-hidden="true">✦</span></div>
+    <form method="post"><input asp-for="Key" type="hidden" /><input asp-for="Category" type="hidden" /><input asp-for="Version" type="hidden" /><input asp-for="QuestionVersion" type="hidden" />
+    @if (question.FreeText)
+    { <label class="discovery-text">پاسخ خودت<input asp-for="Text" maxlength="100" required autocomplete="off" /><span class="field-hint">فقط چیزی را بنویس که دوست داری ذخیره شود؛ نام هنرمند را از سلیقهٔ موسیقی‌ات حدس نمی‌زنیم.</span></label> }
+    else
+    { <fieldset class="live-options game-options"><legend class="live-sr-only">انتخاب تو</legend>@for (var i = 0; i < question.Options.Length; i++) { <label class="live-option game-option"><input type="radio" name="Option" value="@i" checked="@(Model.Option == i)" required /><span class="option-mark" aria-hidden="true">@(i + 1)</span><span class="option-text">@question.Options[i]</span><span class="option-check" aria-hidden="true">✓</span></label> }</fieldset> }
+    <div class="discovery-actions"><button class="button button-primary" type="submit">ذخیره و انتخاب بعدی <svg class="icon"><use href="#i-arrow" /></svg></button><button class="button button-outline" name="skip" value="true" formnovalidate>رد یا پنهان می‌کنم</button></div></form></section>
+    <p class="field-hint">@(question.Sensitive ? "این پاسخ خصوصی می‌ماند و قابل انتشار یا مقایسه نیست. رد کردن، پیشنهادهای بعدی این موضوع را متوقف می‌کند." : "می‌توانی بعداً پاسخت را ویرایش کنی. رد کردن، انتخاب قبلی همین سؤال را از تحلیل پنهان می‌کند.")</p>
+}
+else { <section class="card discovery-panel"><h1>انتخاب‌های این بخش تموم شد ✦</h1><p>فکت‌ها و ردپای سلیقه‌ات آمادهٔ مرورند. می‌توانی دسته‌های دیگر را هم کشف کنی.</p><a class="button button-purple" asp-page="Index">دیدن شخصیت من</a></section> }
+<a class="text-link" asp-page="Index">فعلاً کافیه؛ بریم سراغ نتیجه‌ها</a>
+<details class="card discovery-panel"><summary>دوست داری یک موضوع رو انتخاب کنی؟</summary><div class="discovery-topics"><a asp-page="Question">انتخاب پیشنهادی</a>@foreach (var category in FriendShip.Application.Discovery.DiscoveryCatalog.All.Where(q => (!q.Sensitive || Model.View.Settings!.AllowRelationships) && (!q.MbtiOnly || Model.View.Settings!.AllowMbti)).Select(q => q.Category).Distinct()) { <a asp-page="Question" asp-route-category="@category">@category</a> }</div></details>
+</div>

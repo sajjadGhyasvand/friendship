@@ -1,0 +1,9 @@
+@page "/g/{linkCode}"
+@model FriendShip.Web.Pages.Ui.Game.LinkModel
+@{ ViewData["Title"] = "بازی پیدا نشد"; }
+<section class="card empty-personal">
+    <img src="~/images/avatars/friendship-cat.small.png" width="200" height="208" alt="گربه کنجکاو بازی" />
+    <h1>این بازی پیدا نشد</h1>
+    <p>شاید لینک کامل کپی نشده یا صاحب بازی این دور رو حذف کرده. ازش لینک تازه بگیر.</p>
+    <a class="button button-primary" asp-page="/Ui/Index">برگشت به خانه</a>
+</section>

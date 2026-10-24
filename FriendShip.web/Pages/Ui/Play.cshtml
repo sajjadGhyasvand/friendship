@@ -1,0 +1,43 @@
+@page
+@model FriendShip.Web.Pages.Ui.PlayModel
+@{ ViewData["Title"] = "چالش شناخت"; ViewData["PageKind"] = "play"; }
+<div class="play-stage">
+    @if (Model.ErrorMessage is not null)
+    {
+        <section class="card game-error">
+            <img src="~/images/avatars/friendship-cat.small.png" width="150" height="156" alt="" />
+            <span class="eyebrow">یه مکث کوچولو</span><h1>بیا بازی رو ادامه بدیم</h1><p role="alert">@Model.ErrorMessage</p>
+            <a class="button button-primary button-block" asp-page="/Ui/Play" asp-route-code="@Model.Code">دوباره امتحان کن <svg class="icon"><use href="#i-arrow" /></svg></a>
+            <a class="text-link" asp-page="/Ui/Rooms/Join" asp-route-code="@Model.Code">برگشت به صفحه بازی</a>
+        </section>
+    }
+    else if (Model.Question is { } question)
+    {
+        <div class="play-topline"><a asp-page="/Ui/Rooms/Join" asp-route-code="@Model.Code" class="icon-button" aria-label="برگشت به صفحه بازی"><svg class="icon"><use href="#i-back" /></svg></a><span>چالش رفاقت</span><span class="play-count"><b>@question.Number</b> / @question.Total</span></div>
+        <div class="play-progress"><progress class="live-progress" value="@(question.Number - 1)" max="@question.Total" aria-label="تعداد سؤال‌های پاسخ‌داده‌شده"></progress><span class="progress-spark" aria-hidden="true">✦</span></div>
+        <div class="question-intro"><span class="category-pill">@question.CategoryIcon @question.CategoryName</span><span class="quiet-label">@(question.Number == question.Total ? "آخرین حدس!" : "ببینیم چقدر می‌شناسیش")</span></div>
+        <section class="live-quiz" aria-labelledby="question-title">
+            <div class="question-scene"><span class="scene-spark scene-spark-one" aria-hidden="true">✧</span><span class="scene-spark scene-spark-two" aria-hidden="true">✦</span><span class="question-number">سؤال @question.Number</span><h1 id="question-title">@question.Text</h1><div class="question-sticker" aria-hidden="true">؟</div></div>
+            <form method="post" action="@Url.Page("/Ui/Play")" data-live-play-form>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Code" value="@Model.Code" /><input type="hidden" name="RoomQuestionId" value="@question.RoomQuestionId" /><input type="hidden" name="TimedOut" value="false" data-timeout-input />
+                <fieldset class="live-options game-options"><legend class="live-sr-only">فکر می‌کنی کدوم رو انتخاب می‌کنه؟</legend>
+                @for (var index = 0; index < question.Options.Count; index++)
+                {
+                    var option = question.Options[index];
+                    <label class="live-option game-option" data-option-index="@index"><input type="radio" name="OptionId" value="@option.Id" required /><span class="option-mark" aria-hidden="true">@("ابجد"[index % 4])</span><span class="option-text">@option.Text</span><span class="option-check" aria-hidden="true"><svg class="icon"><use href="#i-check" /></svg></span></label>
+                }
+                </fieldset>
+                @if (question.CanSkip) { <button class="text-link discovery-skip" name="Skip" value="true" formnovalidate>نمی‌دونم؛ رد می‌کنم (خارج از درصد شناخت)</button> }
+                <div class="play-action"><button class="button button-purple button-block" type="submit" data-answer-button><span data-answer-label>@(question.Number == question.Total ? "بریم نتیجه رو ببینیم" : "همینه! بریم بعدی")</span><svg class="icon"><use href="#i-arrow" /></svg></button><p class="live-submit-status" role="status" data-submit-status>اول یه گزینه رو انتخاب کن</p></div>
+            </form>
+        </section>
+        <div class="play-companion"><img src="~/images/avatars/friendship-cat.small.png" width="82" height="85" alt="" /><div><strong>به حدست اعتماد کن!</strong><span>جواب‌ها تا پایان دور، راز می‌مونن.</span></div>
+        @if (question.SecondsLeft is int secondsLeft)
+        { <div class="live-timer timer-pill" data-play-timer data-seconds="@secondsLeft" role="timer" aria-label="زمان تقریبی باقی‌مانده"><strong data-timer-value>@secondsLeft</strong><span>ثانیه</span></div> }
+        else { <span class="untimed-badge">عجله نداریم</span> }
+        </div>
+        <p class="play-footnote">هر جواب که ثبت بشه، دیگه تغییر نمی‌کنه.</p>
+    }
+</div>
+@section Scripts { <script src="~/friendship/play.js" asp-append-version="true" defer></script> }

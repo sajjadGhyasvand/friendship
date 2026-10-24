@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="FriendShip.Application/FriendShip.Application.csproj" />
+  <Project Path="FriendShip.Domain/FriendShip.Domain.csproj" />
+  <Project Path="FriendShip.Infrastructure/FriendShip.Infrastructure.csproj" Id="69524fe4-7549-4703-bd29-b7b09eed6653" />
+  <Project Path="FriendShip.web/FriendShip.web.csproj" DisplayName="FriendShip.Web" />
+  <Project Path="FriendShip.Tests/FriendShip.Tests.csproj" />
+</Solution>

@@ -1,0 +1,43 @@
+@page
+@model FriendShip.Web.Pages.Ui.Game.CreateModel
+@{ ViewData["Title"] = "بازی خودت رو بساز"; ViewData["PageKind"] = "create"; }
+<div class="quiz-shell">
+    <div class="builder-heading"><span class="eyebrow">بازی تو از اینجا شروع می‌شه</span><h1>اول، سلیقه خودت!</h1><p>حداقل ۵ انتخاب از ۳ دسته. بقیه با خودته.</p><img src="~/images/avatars/friendship-boy.small.png" width="85" height="90" alt="" /></div>
+    @if (Model.NewRound)
+    {
+        <p class="notice">با انتشار، یک دور تازه شروع می‌شود. پاسخ‌های قبلی آرشیو می‌شوند و لینک بازی تو ثابت می‌ماند. دور قبلی دیگر پاسخ تازه نمی‌پذیرد؛ تلاش‌های نیمه‌کاره هم محفوظ می‌مانند.</p>
+    }
+    <form method="post" data-profile-wizard data-storage-key="profile-@(Model.NewRound ? "new-round" : "first")-@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
+        <input asp-for="NewRound" type="hidden" />
+        <div asp-validation-summary="All" class="form-errors" role="alert"></div>
+        <div class="wizard-meta" data-wizard-meta hidden><span data-step-label></span><progress data-step-progress max="@(Model.Templates.Count + 1)" value="1" aria-label="پیشرفت ساخت بازی"></progress></div>
+        @for (var i = 0; i < Model.Templates.Count; i++)
+        {
+            var template = Model.Templates[i];
+            <section class="card wizard-step" data-wizard-step data-category="@template.Category" data-prompt="@template.Prompt">
+                <div class="question-scene"><span class="eyebrow">@template.Icon @template.Category</span><h2>@template.Prompt</h2><span class="scene-spark scene-spark-one" aria-hidden="true">✧</span></div>
+                <fieldset class="live-options game-options"><legend class="live-sr-only">@template.Prompt</legend>
+                    @for (var j = 0; j < template.Options.Length; j++)
+                    {
+                        <label class="live-option game-option"><input type="radio" name="Answers[@template.Key]" value="@j" checked="@(Model.Answers.TryGetValue(template.Key, out var selected) && selected == j)" /><span class="option-mark" aria-hidden="true">@("ابجد"[j % 4])</span><span class="option-text">@template.Options[j]</span><span class="option-check" aria-hidden="true"><svg class="icon"><use href="#i-check" /></svg></span></label>
+                    }
+                </fieldset>
+                <details class="question-preview"><summary>دوستام چه جور سؤالی می‌بینن؟</summary><p>@template.FriendPrompts[0]</p></details>
+                <button type="button" class="text-link" data-skip hidden>رد کردن این سؤال</button>
+            </section>
+        }
+        <section class="card wizard-step" data-wizard-review>
+            <h2>یک نگاه آخر به انتخاب‌هات</h2>
+            <p>دوستات سؤال‌های موقعیتی می‌بینن و باید انتخاب واقعی تو رو حدس بزنن.</p>
+            <ul data-review-list class="live-review-list"></ul>
+            <p data-review-status role="status"></p>
+            <button class="button button-primary button-block" type="submit" data-publish>@(Model.NewRound ? "انتشار دور تازه" : "بساز و لینک رو بده")</button>
+        </section>
+        <div class="wizard-navigation" data-wizard-navigation hidden>
+            <button type="button" class="button button-outline" data-wizard-back>قبلی</button>
+            <button type="button" class="button button-purple" data-wizard-next>بریم بعدی <svg class="icon"><use href="#i-arrow" /></svg></button>
+        </div>
+        <p class="field-hint" data-draft-hint hidden>انتخاب‌های ارسال‌نشده فقط در همین مرورگر ذخیره می‌شوند.</p>
+    </form>
+</div>
+@section Scripts { <script src="~/friendship/profile-wizard.js" asp-append-version="true" defer></script> }

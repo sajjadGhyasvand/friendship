@@ -1,0 +1,63 @@
+@page
+@model FriendShip.Web.Pages.Ui.Game.IndexModel
+@using FriendShip.Domain.Rooms
+@using FriendShip.Domain.Scoring
+@{ ViewData["Title"] = "بازی من"; ViewData["PageKind"] = "dashboard"; }
+<div class="page-heading"><div class="dashboard-heading"><span class="eyebrow">سلام @Model.Info.OwnerName، خوش برگشتی!</span><h1>یه بازی، کلی رفیق</h1><p>بفرستش برای اونایی که می‌گن خوب می‌شناسنت.</p><img src="~/images/avatars/friendship-boy.small.png" width="90" height="96" alt="" /></div></div>
+@if (Model.RecoveryCode is not null)
+{
+    <section class="card recovery-notice"><h2>کلید برگشت به حسابت</h2><p>این کد فقط یک‌بار نمایش داده می‌شود. در جای امن ذخیره‌اش کن و برای کسی نفرست.</p><code class="recovery-code" dir="ltr">@Model.RecoveryCode</code></section>
+}
+@if (Model.Notice is not null) { <p class="notice" role="status">@Model.Notice</p> }
+<a class="discovery-entry card" asp-page="/Ui/Discover/Index"><span class="entry-spark" aria-hidden="true">✦</span><span><strong>پشت انتخاب‌هات چی هست؟</strong><small>کشف سلیقه‌ها، فکت‌های واقعی و مقایسه با دوستات</small></span><svg class="icon"><use href="#i-arrow" /></svg></a>
+@if (Model.KnowledgeFacts.Count > 0) { <details class="card discovery-panel"><summary>از حدس‌های دوستات چی فهمیدیم؟</summary><div class="fact-grid">@foreach (var fact in Model.KnowledgeFacts) { <article class="fact-card"><span class="eyebrow">شناخت، نه سلیقهٔ خود دوست‌ها</span><h3>@fact.Title</h3><p>@fact.Text</p><small>@fact.SampleCount نمونه · سؤال‌های @string.Join("، ", fact.QuestionOrders)</small></article> }</div></details> }
+@if (Model.Game is not { } game)
+{
+    <section class="card empty-personal"><img src="~/images/avatars/friendship-cat.small.png" width="240" height="240" alt="ماسکات گربه فرندشیپ" /><h2>اول انتخاب‌های خودت رو بگو!</h2><p>چند سؤال کوتاه؛ بعد یک لینک برای دوستات.</p><a class="button button-primary" asp-page="Create">بزن بریم ←</a></section>
+}
+else
+{
+    <section class="card share-panel" data-clear-drafts="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
+        <div><span class="status-badge">@(game.Status == RoomStatus.Open ? "● بازی فعاله" : game.Status == RoomStatus.Paused ? "◷ توقف موقت" : "دور پایان یافته")</span><h2>لینک بازی من</h2><p>@game.ParticipantCount نفر وارد بازی شده‌اند</p></div>
+        <div class="field"><label for="invite-link">این لینک رو برای دوستات بفرست</label><input id="invite-link" class="input" dir="ltr" value="@Model.InviteUrl" readonly /></div>
+        <div class="live-actions"><button type="button" class="button button-primary" data-copy-link="invite-link">کپی لینک</button><button type="button" class="button button-outline" data-share-link="invite-link">اشتراک‌گذاری</button><a class="button button-outline" href="https://wa.me/?text=@Uri.EscapeDataString("فکر می‌کنی چقدر منو می‌شناسی؟ بیا امتحان کن! " + Model.InviteUrl)" target="_blank" rel="noopener noreferrer">واتساپ</a><a class="button button-outline" href="https://t.me/share/url?url=@Uri.EscapeDataString(Model.InviteUrl)&text=@Uri.EscapeDataString("چقدر منو می‌شناسی؟")" target="_blank" rel="noopener noreferrer">تلگرام</a></div>
+        <p data-share-status role="status"></p><p class="invite-copy">«فکر می‌کنی چقدر منو می‌شناسی؟ چند تا حدس بزن، شاید غافلگیر بشیم!»</p>
+    </section>
+    @if (Model.Story is { } story)
+    {
+        var preview = story.Facts.OrderByDescending(f => f.RuleKey.StartsWith("perception.") || f.RuleKey.StartsWith("shared.")).Take(2);
+        <section class="card section friend-story-preview" aria-labelledby="friends-story-title"><span class="eyebrow">از حدس‌های همین دور، بی‌نام و خلاصه</span><h2 id="friends-story-title">رفیقات کجا غافلگیر شدن؟</h2><p class="field-hint">@story.Description</p>
+        <ul>@foreach (var fact in preview) { <li><span data-visual-key="@fact.VisualKey" aria-hidden="true">@fact.Emoji</span><div>@fact.Text</div></li> }</ul>
+        <div class="live-actions"><a class="button button-primary" asp-page="Story">این قصه رو استوری کن ✦</a><a class="text-link" asp-page="Index" asp-fragment="friends-story-title">تازه‌سازی نتیجه‌ها ↻</a></div></section>
+    }
+    @if (Model.Insights is { } stats && stats.CompletedCount > 0)
+    {
+        <div id="game-results" class="metric-grid section"><div class="card metric-card"><strong>@stats.CompletedCount</strong><span>بازی کامل از @stats.ParticipantCount شروع</span></div><div class="card metric-card"><strong>@stats.AveragePercent?.ToString("0.#")٪</strong><span>میانگین حدس درست</span></div><div class="card metric-card"><strong>@stats.BestPercent٪</strong><span>بالاترین درصد</span></div><div class="card metric-card"><strong>@stats.RegisteredAnswerCount</strong><span>پاسخ ثبت‌شده</span></div></div>
+        <p class="field-hint">آمار از بازی‌های تکمیل‌شدهٔ همین نمونه است. در دورهای جدید، سؤال ردشده از درصد کنار می‌رود و بازیِ کاملاً بدون پاسخ در میانگین حساب نمی‌شود. «—» یا درصد خالی یعنی داده کافی نیست.</p>
+        <section class="card section"><h2>رفیقات چه‌قدر درست حدس زدن؟</h2><p>هر سؤال درست ۱۰۰ امتیاز دارد. امتیاز برابر، رتبه برابر؛ سرعت در بازی شخصی اثری ندارد.</p><ol class="friend-ranking">
+        @foreach (var friend in Model.Friends.Take(20))
+        {
+            var tier = TitleCatalog.ForPercent(friend.Percent);
+            <li><span class="rank-number">@friend.Rank</span><div class="friend-name"><strong>@friend.Name</strong><small>@(friend.Comparable == 0 ? "هنوز حدسی ثبت نشده" : tier.Title) · @friend.Score امتیاز · @friend.Correct از @(friend.Comparable ?? friend.Total) پاسخ قابل محاسبه صحیح · @friend.Total سؤال</small>@if (friend.Comparable != 0) { <progress class="score-bar" value="@friend.Percent" max="100" aria-label="@friend.Name: @friend.Percent درصد حدس درست"></progress> }</div><strong>@(friend.Comparable == 0 ? "—" : friend.Percent + "٪")</strong></li>
+        }
+        </ol><a asp-page="/Ui/Rooms/Leaderboard" asp-route-code="@game.Code" class="text-link">همه نتیجه‌ها ←</a></section>
+        <div class="dashboard-columns section">
+            <section class="card"><h2>درست یا غافلگیرکننده؟</h2><div class="answer-ratio"><span>✓ @stats.CorrectAnswerCount پاسخ صحیح</span><span>○ @(stats.CompletedAnswerCount - stats.CorrectAnswerCount) پاسخ دیگر</span><progress max="@Math.Max(1, stats.CompletedAnswerCount)" value="@stats.CorrectAnswerCount" aria-label="نسبت پاسخ صحیح"></progress></div><p>@stats.CompletedAnswerCount پاسخ از بازی‌های تکمیل‌شده؛ @stats.HighScoreCount نفر از @stats.CompletedCount نفر، حداقل ۸۰٪ حدس درست داشته‌اند.</p><label for="completion-progress">تکمیل بازی: @stats.CompletedCount از @stats.ParticipantCount نفر</label><progress id="completion-progress" max="@stats.ParticipantCount" value="@stats.CompletedCount"></progress></section>
+            <section class="card"><h2>شناخت در هر دسته</h2><p class="field-hint">درصد هر دسته به حداقل ۲ سؤال و ۵ پاسخ کامل نیاز دارد؛ صرفاً درباره همین نمونه است.</p>@foreach (var category in stats.Categories) { <div class="category-stat" data-category="@category.Name"><strong>@category.Icon @category.Name</strong><span>@(category.CorrectRate is int rate ? rate + "٪" : "هنوز نمونه کم است") · @category.Answers پاسخ</span>@if (category.CorrectRate is int categoryRate) { <progress max="100" value="@categoryRate" aria-label="@category.Name @categoryRate درصد"></progress> }</div> }</section>
+        </div>
+        @if (stats.Hardest is { } hardest) { <section class="card section"><span class="eyebrow">سؤال غافلگیرکننده این دور</span><h2>@hardest.Text</h2><p>فقط @hardest.CorrectRate٪ از @hardest.Answers پاسخ درست بوده‌اند.</p></section> }
+        <div class="live-actions"><a class="button button-outline" asp-page="/Ui/Rooms/Insights" asp-route-code="@game.Code">جزئیات سؤال‌ها</a><a class="button button-primary" asp-page="Story">پیش‌نمایش استوری شناخت دوستام ✦</a></div>
+    }
+    else
+    {
+        <section class="card section empty-personal"><img src="~/images/avatars/friendship-cat.small.png" width="180" height="180" loading="lazy" alt="گربه منتظر دوست‌ها" /><h2>اولین حدس، از کدوم رفیق؟</h2><p>لینک رو بفرست؛ بعد از اولین بازی کامل، نتیجه‌ها اینجا ظاهر می‌شن.</p></section>
+    }
+    <details class="card section"><summary>ویرایش و مدیریت بازی</summary><p>برای تغییر جواب‌ها یک دور تازه بساز؛ دور قبلی و نتایجش آرشیو می‌شوند. توقف موقت، ارسال پاسخ را هم متوقف می‌کند.</p><div class="live-actions"><a class="button button-outline" asp-page="Create" asp-route-newRound="true">ویرایش انتخاب‌ها / دور تازه</a>@if (game.Status == RoomStatus.Open) { <form method="post" asp-page-handler="Pause"><button class="button button-outline">توقف موقت</button></form> } else if (game.Status == RoomStatus.Paused) { <form method="post" asp-page-handler="Resume"><button class="button button-primary">فعال‌سازی دوباره</button></form> }</div>
+        <details class="danger-zone"><summary>حذف دائمی همین دور</summary><form method="post" asp-page-handler="Delete"><input name="code" value="@game.Code" type="hidden" /><label><input type="checkbox" name="confirmDelete" value="true" required /> می‌دانم بازی، پاسخ‌ها و کارت‌های این دور حذف می‌شوند و قابل برگشت نیستند.</label><button class="button button-outline">حذف دائمی</button></form></details>
+    </details>
+}
+@if (Model.Archive.Count > 0)
+{
+    <details class="card section"><summary>دورهای قبلی و بازی‌های قدیمی (@Model.Archive.Count)</summary><ul class="live-review-list">@foreach (var old in Model.Archive) { <li class="live-review-item"><strong>@old.Title</strong><p>@old.CreatedAt.ToString("yyyy/MM/dd") · میلادی</p><a asp-page="/Ui/Rooms/Manage" asp-route-code="@old.Code" class="text-link">پاسخ‌های مرجع</a> · <a asp-page="/Ui/Rooms/Insights" asp-route-code="@old.Code" class="text-link">آمار این دور</a><details><summary>حذف دائمی این دور</summary><form method="post" asp-page-handler="Delete"><input name="code" value="@old.Code" type="hidden" /><label><input type="checkbox" name="confirmDelete" value="true" required /> حذف بازی و همه پاسخ‌های این دور را تأیید می‌کنم.</label><button class="button button-outline">حذف دائمی دور</button></form></details></li> }</ul></details>
+}
+@section Scripts { <script src="~/friendship/sharing.js" asp-append-version="true" defer></script><script src="~/friendship/story-card.js" asp-append-version="true" defer></script> }

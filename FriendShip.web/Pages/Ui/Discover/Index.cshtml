@@ -1,0 +1,56 @@
+@page
+@model FriendShip.Web.Pages.Ui.Discover.IndexModel
+@using FriendShip.Domain.Discovery
+@using FriendShip.Application.Discovery
+@{ ViewData["Title"] = "شخصیت من"; ViewData["PageKind"] = "discovery"; }
+<div class="portrait-page">
+<div class="portrait-top"><a class="text-link" asp-page="/Ui/Game/Index">← بازی من</a><a class="text-link" asp-page="Settings">تنظیمات و پاسخ‌هام</a></div>
+@if (Model.Notice is not null) { <p class="notice" role="status">@Model.Notice</p> }
+@if (Model.View.Analysis is { Portrait: { } portrait } analysis)
+{
+    var facts = analysis.Facts.Where(f => !f.Sensitive).Take(PersonalityComposer.MaxFacts).ToArray();
+    <header class="portrait-intro"><span class="eyebrow">نسخهٔ غیررسمی @Model.View.OwnerName</span><h1>تو از نظر ما<br />چه جور آدمی هستی؟</h1><p>از انتخاب‌های تو، با چاشنیِ شوخی ✦</p></header>
+    <section class="portrait-cover" aria-labelledby="portrait-name">
+        <span class="portrait-sticker">یک برداشت، هزار تا «این خودمم!»</span>
+        <span class="portrait-orbit" data-portrait-emoji data-visual-key="@portrait.VisualKey" aria-hidden="true">@portrait.Emoji</span>
+        <h2 id="portrait-name" data-portrait-title>@portrait.Nickname</h2><p data-portrait-description>@portrait.Description</p>
+        <div class="portrait-highlights" data-portrait-strengths>@foreach (var strength in (portrait.Strengths ?? []).Take(2)) { <span>✦ @strength</span> }</div>
+        <p class="portrait-interests" data-portrait-interests>@string.Join(" · ", portrait.SignatureInterests ?? [])</p>
+        <p class="portrait-humor" data-portrait-humor>@(portrait.HumorLine == portrait.Description ? "" : portrait.HumorLine)</p>
+        <span class="portrait-signature">این تویی، از دریچهٔ انتخاب‌هات.</span>
+    </section>
+    <p class="portrait-coverage" data-portrait-coverage>✦ @portrait.Coverage</p>
+    @if (facts.Length > 0)
+    {
+        <section class="personality-sheet" aria-labelledby="facts-heading"><div class="sheet-heading"><h2 id="facts-heading">چند خط از دنیای تو</h2><span>درست گرفتیم؟</span></div>
+        @foreach (var fact in facts)
+        {
+            var confirmed = fact.Decision == AnalysisDecisionState.Confirmed;
+            var rejected = fact.Decision == AnalysisDecisionState.Rejected;
+            var partial = fact.Decision == AnalysisDecisionState.Partial;
+            <article class="personality-row @(rejected ? "is-rejected" : "")" data-fact-row>
+                <span class="fact-visual" data-visual-key="@fact.VisualKey" aria-hidden="true">@fact.Emoji</span>
+                <div class="personality-copy"><h3>@fact.Category <span>@(fact.Certainty == FactCertainty.SupportedPattern ? "از چند سرنخ" : "از انتخاب خودت")</span></h3><p>@fact.Text</p>
+                <form method="post" asp-page-handler="Decision" data-fact-feedback aria-label="نظرت دربارهٔ @fact.Title">
+                    <input type="hidden" name="key" value="@fact.Id" />
+                    <div class="fact-votes"><button name="state" value="Confirmed" aria-pressed="@(confirmed ? "true" : "false")">👍 درسته!</button><button name="state" value="Partial" aria-pressed="@(partial ? "true" : "false")">🤏 تا حدی</button><button name="state" value="Rejected" aria-pressed="@(rejected ? "true" : "false")">👎 شبیه من نیست</button></div>
+                    <small data-feedback-status role="status">@(confirmed ? "با تأیید تو؛ می‌تونی برای استوری انتخابش کنی." : partial ? "تا حدی قبولش داری؛ برای لقب و استوری تأیید کامل لازم داریم." : rejected ? "قبولش نداری؛ وارد استوری نمی‌شه. می‌تونی نظرت رو عوض کنی." : "هنوز تأییدش نکردی؛ وارد استوری نمی‌شه.")</small>
+                </form></div>
+            </article>
+        }
+        <p class="sheet-footer">@portrait.PositiveLine</p></section>
+    }
+    else
+    { <section class="personality-sheet portrait-empty"><span aria-hidden="true">🔍</span><h2>قصهٔ تو چند سرنخ کم داره</h2><p>چند انتخاب تازه، بعد یک معرفی که بیشتر شبیه خودت باشه.</p></section> }
+    <div class="portrait-next"><a class="button button-primary" asp-page="Story">پیش‌نمایش استوری من <svg class="icon"><use href="#i-share" /></svg></a><a class="button button-outline" asp-page="Question">چند انتخاب تازه ✦</a></div>
+    <p class="portrait-invite"><a class="text-link" asp-page="/Ui/Game/Index">رفیقات هم همین تصویر رو ازت دارن؟ لینک بازی رو بفرست ←</a></p>
+    @if (portrait.Unknowns.Count > 0) { <details class="portrait-unknown"><summary>هنوز چی رو نمی‌دونیم؟</summary>@foreach (var unknown in portrait.Unknowns) { <p>@unknown</p> }<p>چیزی که نمی‌دونیم رو با لقب و حدس پر نمی‌کنیم.</p></details> }
+}
+else
+{
+    <header class="portrait-intro"><span class="eyebrow">یک آینه، با چاشنیِ بازی</span><h1>اگه انتخاب‌هات<br />زبون باز کنن چی می‌گن؟</h1></header>
+    <section class="portrait-cover portrait-welcome"><img src="~/images/avatars/friendship-cat.small.png" width="160" height="166" alt="گربهٔ کنجکاو فرندشیپ" /><h2>کشف خصوصی رو شروع کنیم؟</h2><p>چند انتخاب کوتاه؛ یک لقب، چند فکت و کلی «این دقیقاً خودمم!»</p><p class="portrait-signature">نتیجه اول فقط برای خودته.</p></section>
+    <form method="post" asp-page-handler="Configure" class="portrait-next"><input type="hidden" name="version" value="@Model.View.Settings?.Version" /><input type="hidden" name="enabled" value="true" /><button class="button button-primary">بزن بریم، منو کشف کن ✨</button><p class="field-hint">با شروع، پاسخ‌های شناخته‌شدهٔ بازی فعلی‌ات هم تحلیل می‌شوند. مقایسه و سؤال‌های خصوصی اختیاری‌اند؛ از تنظیمات انتخابشان کن.</p></form>
+}
+</div>
+@section Scripts { <script src="~/friendship/discovery.js" asp-append-version="true" defer></script><script src="~/friendship/story-card.js" asp-append-version="true" defer></script> }

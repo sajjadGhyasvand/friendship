@@ -1,0 +1,12 @@
+@page "/f/{code}"
+@model FriendShip.Web.Pages.Ui.FactModel
+@{ ViewData["Title"] = "یک فکت از من"; ViewData["PageKind"] = "discovery"; }
+@if (Model.Shared is not { } shared)
+{ <section class="card discovery-panel"><h1>این فکت در دسترس نیست</h1><p>ممکن است صاحبش انتشار را لغو کرده یا پاسخ‌هایش عوض شده باشند.</p><a class="button button-primary" asp-page="/Ui/Discover/Index">کشف من</a></section> }
+else
+{ var link = Url.Page("/Ui/Fact", null, new { code = Model.Code }, Request.Scheme)!;
+ <article class="card public-fact fact-card"><span class="eyebrow">یک فکت از @shared.OwnerName</span><span class="fact-spark" aria-hidden="true">✦</span><h1>@shared.Fact.Title</h1><p class="fact-text">@shared.Fact.Text</p><img src="~/images/avatars/friendship-cat.small.png" width="150" height="156" alt="" /><p>@shared.Fact.Kind · @shared.Fact.SampleCount پاسخ پشتیبان</p><p>@(shared.Fact.Decision == FriendShip.Domain.Discovery.AnalysisDecisionState.Confirmed ? "با تأیید صاحب پروفایل" : "انتشار با اجازهٔ صاحب پروفایل؛ برداشت تأیید نشده")</p>
+ <button class="button button-primary" type="button" data-story-card data-card-kind="fact" data-card-owner="@shared.OwnerName" data-card-title="@shared.Fact.Title" data-card-message="@shared.Fact.Text" data-card-sample="@shared.Fact.SampleCount" data-card-source="@shared.Fact.Kind" data-card-url="@link" data-card-mascot="@Url.Content("~/images/avatars/friendship-cat.small.png")">دریافت کارت استوری</button><p data-card-status role="status"></p><button class="button button-outline" type="button" data-discovery-share="@link">کپی یا ارسال لینک</button><p data-share-status role="status"></p></article>
+ <p class="result-note">برداشت سرگرم‌کننده از همین پاسخ‌ها؛ تشخیص روان‌شناختی نیست.</p>
+}
+@section Scripts { <script src="~/friendship/story-card.js" asp-append-version="true" defer></script><script src="~/friendship/discovery.js" asp-append-version="true" defer></script> }

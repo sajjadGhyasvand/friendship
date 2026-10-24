@@ -1,0 +1,14 @@
+@model FriendShip.Application.Discovery.StoryContent
+@using System.Text.Json
+@{ var storyUrl = ViewData["StoryUrl"]?.ToString() ?? "/Ui"; }
+<section class="story-workspace">
+    <div class="narrative-poster" aria-label="پیش‌نمایش استوری" data-story-preview>
+        <div class="poster-brand"><strong>فرندشیپ<span>✦</span></strong><span>@(Model.Kind == "friends" ? "دوستام چقدر منو می‌شناسن؟" : "نسخهٔ غیررسمی من")</span></div>
+        <div class="poster-owner">@Model.OwnerName</div>
+        <div class="poster-persona"><span data-visual-key="@Model.VisualKey" aria-hidden="true">@Model.Emoji</span><h2>@Model.Title</h2><p>@Model.Description</p></div>
+        <div class="poster-facts">@foreach (var fact in Model.Facts) { <div><span data-visual-key="@fact.VisualKey" aria-hidden="true">@fact.Emoji</span><p>@fact.Text</p></div> }</div>
+        <div class="poster-bottom"><p>@Model.PositiveLine</p><strong>@Model.Invitation</strong><span dir="ltr">@(new Uri(new Uri($"{Context.Request.Scheme}://{Context.Request.Host}"), storyUrl).Host)</span></div>
+    </div>
+    <div class="story-export"><p class="field-hint">پیش‌نمایش محتوای تصویر · خروجی PNG با ابعاد ۱۰۸۰ × ۱۹۲۰</p><div class="discovery-actions"><button type="button" class="button button-primary" data-narrative-story="narrative-data" data-card-url="@storyUrl">دریافت تصویر استوری ↓</button><button type="button" class="button button-purple" data-narrative-story="narrative-data" data-share-image data-card-url="@storyUrl">اشتراک تصویر <svg class="icon"><use href="#i-share" /></svg></button></div><p data-card-status role="status"></p><small>انتشار فقط با انتخاب تو انجام می‌شه. تصویر دانلودشده از دستگاه دیگران قابل پس‌گرفتن نیست.</small></div>
+</section>
+<script id="narrative-data" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model))</script>

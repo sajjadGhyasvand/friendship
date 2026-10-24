@@ -1,0 +1,202 @@
+﻿@page
+@model FriendShip.Web.Pages.Ui.Rooms.InsightsModel
+@using FriendShip.Application.Services
+
+@{
+    ViewData["Title"] = "آمار بازی";
+}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">ویژه‌ی میزبان</span>
+        <h1>آمار بازی</h1>
+        <p>آمار پاسخ‌ها فقط از بازی‌های تکمیل‌شده محاسبه می‌شود.</p>
+    </div>
+
+    <a class="button button-outline"
+       asp-page="/Ui/Rooms/Index">
+        بازی من
+    </a>
+</div>
+
+@if (Model.ErrorMessage is not null)
+{
+    <section class="card live-message">
+        <h2>آمار قابل نمایش نیست</h2>
+        <p role="alert">@Model.ErrorMessage</p>
+    </section>
+}
+else if (Model.Insights is { } stats)
+{
+    <div class="metric-grid" aria-label="خلاصه‌ی آمار">
+        <div class="card metric-card">
+            <strong>@stats.ParticipantCount</strong>
+            <span>شرکت‌کننده</span>
+        </div>
+
+        <div class="card metric-card">
+            <strong>@stats.CompletedCount</strong>
+            <span>بازی تکمیل‌شده</span>
+        </div>
+
+        <div class="card metric-card"><strong>@stats.RegisteredAnswerCount</strong><span>پاسخ ثبت‌شده (شامل بازی نیمه‌کاره)</span></div>
+
+        <div class="card metric-card">
+            <strong>
+                @(stats.AveragePercent is double average
+                    ? average.ToString("0.#") + "٪"
+                    : "—")
+            </strong>
+            <span>میانگین درصد شناخت</span>
+        </div>
+
+        <div class="card metric-card">
+            <strong>
+                @(stats.BestPercent is int best
+                    ? best.ToString() + "٪"
+                    : "—")
+            </strong>
+            <span>بهترین درصد شناخت</span>
+        </div>
+    </div>
+
+    @if (!stats.HasEnoughData)
+    {
+        <p class="demo-notice">
+            برای تحلیل آسان‌ترین و سخت‌ترین سؤال،
+            حداقل @ResultsService.MinParticipantsForInsights بازی تکمیل‌شده
+            لازم است. تحلیل سؤال‌ها به حداقل پاسخ هر سؤال هم وابسته است.
+        </p>
+    }
+
+    @if (stats.AveragePercent is null)
+    {
+        <p class="demo-notice">
+            میانگین بعد از اولین بازی تکمیل‌شده با پاسخ قابل محاسبه نمایش داده می‌شود.
+        </p>
+    }
+
+    <section class="section card" aria-labelledby="question-stats-title">
+        <h2 id="question-stats-title">آمار سؤال‌ها</h2>
+
+        <p>
+            درصد تطابق هر سؤال پس از ثبت حداقل
+            @ResultsService.MinAnswersPerQuestion پاسخ نهایی
+            از بازی‌های تکمیل‌شده نمایش داده می‌شود.
+        </p>
+
+        @if (stats.Questions.Count == 0)
+        {
+            <p>سؤالی برای نمایش وجود ندارد.</p>
+        }
+        else
+        {
+            <ol class="live-review-list">
+                @foreach (var question in stats.Questions)
+                {
+                    <li class="live-review-item">
+                        <h3>@question.Order. @question.Text</h3>
+
+                        <p>تعداد پاسخ نهایی: @question.Answers</p>
+
+                        <p>
+                            <strong>تطابق با انتخاب میزبان:</strong>
+
+                            @if (question.CorrectRate is int rate)
+                            {
+                                <span>@rate٪</span>
+                                <progress max="100" value="@rate" aria-label="سؤال @question.Order: @rate درصد تطابق"></progress>
+                            }
+                            else
+                            {
+                                <span>داده‌ی کافی نیست</span>
+                            }
+                        </p>
+                    </li>
+                }
+            </ol>
+        }
+    </section>
+
+    <section class="section card" aria-labelledby="category-stats-title">
+        <h2 id="category-stats-title">آمار دسته‌بندی‌ها</h2>
+
+        <p>
+            درصد هر دسته از مجموع پاسخ‌های سؤال‌های آن محاسبه می‌شود؛
+            حداقل @ResultsService.MinAnswersPerCategory پاسخ و ۲ سؤال لازم است.
+            تعداد پاسخ‌ها لزوماً برابر تعداد افراد نیست.
+        </p>
+
+        @if (stats.Categories.Count == 0)
+        {
+            <p>دسته‌بندی‌ای برای نمایش وجود ندارد.</p>
+        }
+        else
+        {
+            <ul class="live-review-list">
+                @foreach (var category in stats.Categories)
+                {
+                    <li class="live-review-item category-stat" data-category="@category.Name">
+                        <h3>@category.Icon @category.Name</h3>
+
+                        <p>تعداد پاسخ نهایی: @category.Answers</p>
+
+                        <p>
+                            <strong>تطابق با انتخاب میزبان:</strong>
+
+                            @if (category.CorrectRate is int categoryRate)
+                            {
+                                <span>@categoryRate٪</span>
+                                <progress max="100" value="@categoryRate" aria-label="@category.Name: @categoryRate درصد تطابق"></progress>
+                            }
+                            else
+                            {
+                                <span>داده‌ی کافی نیست</span>
+                            }
+                        </p>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="section card" aria-labelledby="highlights-title">
+        <h2 id="highlights-title">آسان‌ترین و سخت‌ترین سؤال</h2>
+
+        @if (stats.Easiest is { } easiest &&
+             stats.Hardest is { } hardest)
+        {
+            <h3>بیشترین تطابق</h3>
+            <p>@easiest.Order. @easiest.Text</p>
+            <p>تطابق: @easiest.CorrectRate٪</p>
+
+            <h3>کمترین تطابق</h3>
+            <p>@hardest.Order. @hardest.Text</p>
+            <p>تطابق: @hardest.CorrectRate٪</p>
+
+            <p>
+                این مقایسه فقط بین سؤال‌های دارای نمونه‌ی کافی انجام می‌شود.
+                اگر فقط یک سؤال واجد شرایط باشد یا درصدها برابر باشند،
+                ممکن است هر دو مورد یک سؤال باشند.
+            </p>
+        }
+        else
+        {
+            <p>برای این مقایسه هنوز داده‌ی کافی وجود ندارد.</p>
+        }
+    </section>
+
+    <div class="live-actions">
+        <a class="button button-primary"
+           asp-page="/Ui/Rooms/Insights"
+           asp-route-code="@Model.Code">
+            تازه‌سازی آمار
+        </a>
+
+        <a class="button button-outline"
+           asp-page="/Ui/Rooms/Manage"
+           asp-route-code="@Model.Code">
+            مدیریت بازی
+        </a>
+    </div>
+}

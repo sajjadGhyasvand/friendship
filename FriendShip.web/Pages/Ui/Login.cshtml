@@ -1,0 +1,90 @@
+﻿@page
+
+@{
+    ViewData["Title"] = "ورود اختیاری";
+}
+
+<div class="auth-preview">
+    <a class="breadcrumb" href="@Url.Content("~/Ui/Rooms")">
+        <span aria-hidden="true">→</span>
+        برگشت به بازی‌ها
+    </a>
+
+    <section class="card">
+        <span class="eyebrow">حساب کاربری اختیاری</span>
+
+        <h1>خوش برگشتی!</h1>
+
+        <p class="auth-description">
+            برای بازی کردن نیازی به ورود نداری.
+            حساب کاربری برای داشتن پروفایل و نگهداری سابقه‌ی بازی‌هاست.
+        </p>
+
+        <a class="button button-primary auth-wide"
+           href="@Url.Content("~/Ui/Rooms/Join")">
+            بدون ثبت‌نام بازی می‌کنم
+            <span aria-hidden="true">←</span>
+        </a>
+
+        <div class="auth-divider">
+            <span>یا با حساب خودت وارد شو</span>
+        </div>
+
+        <form data-account-demo="login">
+            <fieldset class="auth-fields" disabled>
+                <div class="auth-field">
+                    <label for="login-email">ایمیل</label>
+                    <input id="login-email"
+                           type="email"
+                           autocomplete="username"
+                           dir="ltr"
+                           placeholder="name@example.com"
+                           maxlength="254"
+                           required />
+                </div>
+
+                <div class="auth-field">
+                    <label for="login-password">رمز عبور</label>
+                    <input id="login-password"
+                           type="password"
+                           autocomplete="current-password"
+                           dir="ltr"
+                           required />
+                </div>
+
+                <button class="button button-outline auth-wide"
+                        type="submit">
+                    بررسی فرم ورود — نمایشی
+                </button>
+            </fieldset>
+
+            <p class="auth-message"
+               role="status"
+               aria-live="polite"
+               data-account-message></p>
+        </form>
+
+        <p class="auth-switch">
+            حساب نداری؟
+            <a href="@Url.Content("~/Ui/Register")">
+                ساخت حساب اختیاری
+            </a>
+        </p>
+    </section>
+
+    <aside class="demo-notice">
+        این فرم به سرور متصل نیست. از رمز واقعی استفاده نکن.
+        اطلاعات واردشده ارسال یا ذخیره نمی‌شوند.
+    </aside>
+
+    <noscript>
+        <p class="demo-notice">
+            فرم نمایشی به جاوااسکریپت نیاز دارد؛ لینک ادامه بدون ثبت‌نام فعال است.
+        </p>
+    </noscript>
+</div>
+
+@section Scripts {
+    <script src="@Url.Content("~/friendship/account-demo.js")"
+            defer></script>
+}

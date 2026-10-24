@@ -1,0 +1,61 @@
+@page
+@model FriendShip.Web.Pages.Ui.Rooms.ResultsModel
+@{ ViewData["Title"] = "نتیجه چالش"; ViewData["PageKind"] = "result"; }
+@if (Model.ErrorMessage is not null)
+{
+    <section class="card game-error"><img src="~/images/avatars/friendship-cat.small.png" width="150" height="156" alt="" /><h1>هنوز نتیجه آماده نیست</h1><p role="alert">@Model.ErrorMessage</p><a class="button button-primary" asp-page="/Ui/Play" asp-route-code="@Model.Code">برگشت به بازی</a></section>
+}
+else if (Model.MyResult is { } result)
+{
+    var shareUrl = Url.Page("/Ui/Share", null, new { shareCode = result.ShareCode }, Request.Scheme)!;
+    <section class="result-celebration" aria-labelledby="result-title">
+        <span class="eyebrow"><svg class="icon"><use href="#i-crown" /></svg> چالش تموم شد!</span>
+        <h1 id="result-title">@result.ParticipantName، اینم نتیجه‌ات!</h1>
+        <p>در چالش شناخت <strong>@result.OwnerName</strong></p>
+        @if (Model.Knowledge?.Comparable != 0) {
+        <div class="result-stage"><div class="score-ring" aria-label="@result.Percent درصد حدس درست"><div class="score-ring-inner"><strong>@result.Percent٪</strong><span>امتیاز ثبت‌شدهٔ این دور</span></div></div><img class="result-mascot" src="~/images/avatars/friendship-boy.small.png" width="108" height="115" alt="ماسکات خوشحال بازی" /></div>
+        <span class="result-tier">@result.TierEmoji @result.TierTitle</span>
+        <p class="result-message">@result.TierMessage</p>
+        } else { <p class="notice">پاسخ قابل مقایسه‌ای ثبت نشده؛ دادهٔ کافی برای درصد شناخت نداریم.</p> }
+    </section>
+    <div class="metric-grid" aria-label="خلاصه نتیجه">
+        <div class="card metric-card"><strong>@result.Correct</strong><span>پاسخ درست</span></div>
+        <div class="card metric-card"><strong>@result.Total</strong><span>سؤال</span></div>
+        <div class="card metric-card"><strong>@result.Score</strong><span>امتیاز</span></div>
+    </div>
+    @if (Model.Knowledge?.Comparable != 0) {
+        <div class="result-share-action"><button class="button button-primary" type="button" data-story-card data-card-name="@result.ParticipantName" data-card-owner="@result.OwnerName" data-card-percent="@result.Percent" data-card-message="@result.Correct پاسخ درست؛ @(Model.Knowledge?.Comparable ?? result.Total) پاسخ قابل مقایسه از @result.Total سؤال" data-card-url="@shareUrl" data-card-mascot="@Url.Content("~/images/avatars/friendship-boy.small.png")"><svg class="icon"><use href="#i-share" /></svg> کارت رفاقتم رو بگیر</button><p data-card-status role="status">برای استوری و تعریف کردن از حدس‌هات!</p></div>
+        <a class="button button-outline" href="@shareUrl">لینک کارت عمومی</a>
+    }
+    <div class="live-actions"><a class="button button-outline" asp-page="/Ui/Game/Index">منم بازی خودم رو بسازم</a><a class="button button-purple" asp-page="/Ui/Discover/Index">سلیقه‌های خودم رو کشف کنم</a></div>
+    @if (Model.Knowledge is { } knowledge)
+    {
+        <section class="card discovery-panel"><span class="eyebrow">شناخت در هر دسته</span><h2>@(knowledge.Percent is int percent ? percent + "٪ حدس درست در پاسخ‌های قابل مقایسه" : "داده کافی نیست")</h2><p>@knowledge.Correct پاسخ صحیح از @knowledge.Comparable پاسخ قابل مقایسه · @knowledge.Excluded سؤال ردشده یا فاقد مقدار. درصد کلی از مجموع پاسخ‌ها محاسبه شده و میانگین درصد دسته‌ها نیست. وزن همهٔ سؤال‌ها یکسان است.</p><p class="field-hint">امتیاز ذخیره‌شدهٔ دورهای قدیمی حفظ شده؛ تحلیل این بخش، سؤال‌های بدون پاسخ را کنار می‌گذارد. برای درصد هر دسته حداقل دو پاسخ لازم است.</p>
+        @foreach (var category in knowledge.Categories) { <div class="category-stat"><strong>@category.Category</strong><span>@category.Correct از @category.Comparable درست · @category.Skipped کنارگذاشته‌شده · @(category.Percent is int rate ? rate + "٪" : "داده کافی نیست")</span>@if (category.Percent is int categoryRate) { <progress max="100" value="@categoryRate" aria-label="@category.Category: @categoryRate درصد حدس صحیح"></progress> }</div> }
+        @if (knowledge.BestCategory is not null) { <p>بیشترین حدس درست در همین پاسخ‌ها: <strong>@knowledge.BestCategory</strong></p> }
+        @if (knowledge.LeastKnownCategory is not null) { <p>یه بهونه برای بیشتر گپ زدن دربارهٔ <strong>@knowledge.LeastKnownCategory</strong></p> }
+        </section>
+    }
+    @if (result.Rank.HasValue)
+    {
+        <section class="card live-ranking"><h2>جایگاه تو: @result.Rank</h2><p>بین @result.ParticipantCount بازی تکمیل‌شده؛ با جواب‌های تازه ممکنه جابه‌جا بشه.</p><a class="text-link" asp-page="/Ui/Rooms/Leaderboard" asp-route-code="@Model.Code">همه نتیجه‌ها</a></section>
+    }
+    <details class="card live-review"><summary>دوست داری حدس‌هات رو مرور کنی؟</summary>
+        @if (!result.AnswersRevealed) { <p>تا پایان این دور، جواب‌های صاحب بازی راز می‌مونن؛ اینجا فقط حدس‌های خودت رو می‌بینی.</p> }
+        <ol class="live-review-list">
+        @foreach (var answer in result.Answers)
+        {
+            <li class="live-review-item"><h3>@answer.Order. @answer.CategoryIcon @answer.QuestionText</h3><p><strong>پاسخ تو:</strong> @(answer.TimedOut ? "بدون پاسخ / ردشده" : answer.YourOptionText ?? "بدون پاسخ")</p>
+            @if (result.AnswersRevealed)
+            {
+                <p><strong>انتخاب میزبان:</strong> @(answer.CorrectOptionText ?? "—")</p>
+                <p class="@(answer.IsCorrect == true ? "live-correct" : "live-incorrect")">@(answer.IsCorrect == true ? "✓ درست حدس زدی!" : "این یکی غافلگیرت کرد!")</p>
+            }
+            </li>
+        }
+        </ol>
+    </details>
+    <p class="result-note">کارت عمومی نام تو، نام دوستت و درصد رو نشون می‌ده؛ جواب‌ها خصوصی می‌مونن.</p>
+    <p class="result-note">رفاقت خیلی بیشتر از یه امتیازه <svg class="icon"><use href="#i-heart" /></svg></p>
+}
+@section Scripts { <script src="~/friendship/story-card.js" asp-append-version="true" defer></script> }

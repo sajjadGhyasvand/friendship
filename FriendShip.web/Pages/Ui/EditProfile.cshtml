@@ -1,0 +1,100 @@
+﻿@page
+@model FriendShip.web.Pages.Ui.EditProfileModel
+
+@{
+    ViewData["Title"] = "ویرایش پروفایل";
+}
+
+<div class="auth-preview">
+    <a class="breadcrumb" asp-page="/Ui/Profile">
+        <span aria-hidden="true">→</span>
+        برگشت به پروفایل
+    </a>
+
+    <section class="card" aria-labelledby="edit-profile-title">
+        <span class="eyebrow">حساب من</span>
+
+        <h1 id="edit-profile-title">ویرایش پروفایل</h1>
+
+        <p class="auth-description">
+            نام نمایشی و معرفی کوتاهت را تغییر بده
+            و مشخص کن پروفایلت عمومی باشد یا نه.
+        </p>
+
+        <div asp-validation-summary="All"
+             class="auth-message"
+             role="alert"></div>
+
+        @if (Model.CanEdit)
+        {
+            <form method="post" asp-page="/Ui/EditProfile">
+                <fieldset class="auth-fields">
+                    <legend class="eyebrow">اطلاعات پروفایل</legend>
+
+                    <div class="auth-field">
+                        <label asp-for="Input.DisplayName">
+                            نام نمایشی
+                        </label>
+
+                        <input asp-for="Input.DisplayName"
+                               autocomplete="nickname"
+                               dir="auto"
+                               aria-describedby="profile-name-help"
+                               required />
+
+                        <small id="profile-name-help">
+                            لازم نیست نام واقعی‌ات باشد.
+                        </small>
+
+                        <span asp-validation-for="Input.DisplayName"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Input.Bio">
+                            درباره‌ی من
+                        </label>
+
+                        <textarea asp-for="Input.Bio"
+                                  rows="4"
+                                  dir="auto"
+                                  aria-describedby="profile-bio-help"></textarea>
+
+                        <small id="profile-bio-help">
+                            اختیاری است. اطلاعات حساس را اینجا ننویس.
+                        </small>
+
+                        <span asp-validation-for="Input.Bio"></span>
+                    </div>
+
+                    <div>
+                        <label>
+                            <input asp-for="Input.IsPublic"
+                                   aria-describedby="profile-public-help" />
+                            پروفایلم عمومی باشد
+                        </label>
+
+                        <p id="profile-public-help">
+                            با فعال‌کردن این گزینه، اطلاعات عمومی پروفایل،
+                            آمار کلی و نشان‌ها برای دیگران قابل مشاهده می‌شوند.
+                            ایمیل، سابقه‌ی بازی و فهرست دورهای بازی خصوصی می‌مانند.
+                        </p>
+                    </div>
+
+                    <button class="button button-primary auth-wide"
+                            type="submit">
+                        ذخیره‌ی تغییرات
+                    </button>
+
+                    <a class="button button-outline auth-wide"
+                       asp-page="/Ui/Profile">
+                        انصراف
+                    </a>
+                </fieldset>
+            </form>
+
+            <p class="privacy-note">
+                آواتار فعلی بدون تغییر حفظ می‌شود.
+            </p>
+        }
+    </section>
+</div>

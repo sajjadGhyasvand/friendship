@@ -1,0 +1,9 @@
+@page
+@model FriendShip.Web.Pages.Ui.Game.StoryModel
+@{ ViewData["Title"] = "استوری شناخت دوستام"; ViewData["PageKind"] = "discovery"; }
+<div class="portrait-page"><div class="portrait-top"><a class="text-link" asp-page="Index">← بازی من</a><span class="eyebrow">یک قصه از حدس‌های این دور</span></div>
+<header class="story-heading"><h1>کارآگاه‌ها چطور پیش رفتن؟ 🕵️</h1><p>یک جمع‌بندی از این دور؛ بدون اسم، گزینه‌ها یا پاسخ خصوصی هیچ‌کس.</p></header>
+@if (Model.Story is { } story) { <partial name="_NarrativeStory" model="story" /> }
+else { <section class="personality-sheet portrait-empty"><span aria-hidden="true">🔍</span><h2>چند کارآگاه دیگه کم داریم!</h2><p>برای این استوری، دست‌کم ۵ نفر باید در حداقل ۲ سؤالِ عمومی و شناخته‌شده، حدس معتبر ثبت کرده باشند. نتیجه‌های فعلی در بازی من محفوظ‌اند.</p><a class="button button-primary" asp-page="Index">بریم سراغ لینک بازی</a></section> }
+</div>
+@section Scripts { <script src="~/friendship/story-card.js" asp-append-version="true" defer></script> }

@@ -1,0 +1,16 @@
+@page
+@model FriendShip.Web.Pages.Ui.Discover.StoryModel
+@{ ViewData["Title"] = "استوری شخصیت من"; ViewData["PageKind"] = "discovery"; }
+<div class="portrait-page">
+<div class="portrait-top"><a class="text-link" asp-page="Index">← شخصیت من</a><span class="eyebrow">برای استوری، با امضای خودت</span></div>
+<header class="story-heading"><h1>این نسخه رو می‌فرستی؟ ✨</h1><p>فقط فکت‌هایی که تأیید کردی؛ پیش‌نمایش کن و بعد تصویرش رو بگیر.</p></header>
+@if (Model.Available.Count > 0)
+{
+    <details class="story-picker"><summary>انتخاب فکت‌های استوری · حداکثر ۴ تا</summary><form method="get"><input type="hidden" name="choose" value="true" />
+    @foreach (var fact in Model.Available) { <label><input type="checkbox" name="fact" value="@fact.Id" checked="@Model.Selected.Contains(fact.Id)" /><span>@fact.Emoji @fact.Title</span></label> }
+    <small>اگر بیشتر از چهار فکت انتخاب کنی، چهار مورد اول نمایش داده می‌شوند.</small><button class="button button-outline">به‌روزرسانی پیش‌نمایش</button></form></details>
+}
+@if (Model.Story is { } story) { <partial name="_NarrativeStory" model="story" /> }
+else { <section class="personality-sheet portrait-empty"><span aria-hidden="true">💬</span><h2>اول بگو کدومش خودتی!</h2><p>زیر فکت‌هایی که قبولشون داری «درسته!» رو بزن؛ بعد از همین‌جا انتخابشون کن. اگر هیچ‌کدوم انتخاب نشده، استوری نمی‌سازیم.</p><a class="button button-primary" asp-page="Index">برگشت به فکت‌هام</a></section> }
+</div>
+@section Scripts { <script src="~/friendship/story-card.js" asp-append-version="true" defer></script> }

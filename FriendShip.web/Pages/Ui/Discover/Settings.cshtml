@@ -1,0 +1,44 @@
+@page
+@model FriendShip.Web.Pages.Ui.Discover.SettingsModel
+@using FriendShip.Domain.Discovery
+@{ ViewData["Title"] = "تنظیمات کشف من"; ViewData["PageKind"] = "discovery"; var settings = Model.View.Settings; }
+<div class="section-heading"><div><span class="eyebrow">کنترل دست خودته</span><h1>تنظیمات کشف من</h1></div><a class="text-link" asp-page="Index">برگشت به شخصیت من</a></div>
+@if (Model.Notice is not null) { <p class="notice" role="status">@Model.Notice</p> }
+@if (Model.View.Analysis is { } analysis)
+{
+    @if (analysis.Mbti is { } mbti)
+    {
+        <section class="card discovery-panel mbti-panel"><span class="eyebrow">اختیاری و غیررسمی</span><h2>تخمین سرگرم‌کننده MBTI</h2><p>برای هر بُعد حداقل ۳ پاسخ، مجموعاً حداقل ۱۲ پاسخ مرتبط لازم است. نزدیک بودن دو سمت هم باعث می‌شود تیپ قطعی نمایش ندهیم.</p>
+        @if (mbti.Decision == AnalysisDecisionState.Rejected) { <p class="notice">این برداشت را رد کردی؛ به‌عنوان معرفی تو استفاده نمی‌شود.</p> }
+        else if (mbti.UserCorrection is not null) { <strong class="mbti-type" dir="ltr">@mbti.UserCorrection</strong><p>اصلاح خودت؛ جدا از تخمین سیستم.</p> }
+        else if (mbti.Type is not null) { <strong class="mbti-type" dir="ltr">@mbti.Type</strong><p>@(mbti.Decision == AnalysisDecisionState.Confirmed ? "با تأیید تو؛ همچنان یک آزمون غیررسمی." : "تخمین بر اساس همین پاسخ‌ها؛ تست روان‌شناختی معتبر نیست.")</p> }
+        else { <p class="notice">هنوز دادهٔ کافی یا تمایز کافی بین بُعدها نداریم.</p> }
+        <div class="mbti-axes">@foreach (var axis in mbti.Axes) { <span><b dir="ltr">@axis.Key</b> @axis.EvidenceCount / ۳ شاهد</span> }</div>
+        <form method="post" asp-page="Index" asp-page-handler="Decision" class="discovery-inline"><input type="hidden" name="key" value="@mbti.ResultKey" />
+        @if (mbti.Type is not null) { <button class="button button-outline" name="state" value="Confirmed">به من می‌خوره</button> }
+        <button class="button button-outline" name="state" value="Rejected">این برداشت رو قبول ندارم</button></form>
+        <form method="post" asp-page="Index" asp-page-handler="Decision" class="discovery-inline"><input type="hidden" name="key" value="@mbti.ResultKey" /><input type="hidden" name="state" value="Corrected" /><label for="correction">تیپ انتخابی خودت</label><input id="correction" name="correction" maxlength="4" minlength="4" pattern="[EeIi][SsNn][TtFf][JjPp]" dir="ltr" placeholder="INFP" required /><button class="button button-outline">ثبت اصلاح من</button></form>
+        </section>
+    }
+    @if (settings?.AllowComparison == true && settings.ComparisonCode is not null)
+    { var link = Url.Page("Compare", null, new { code = settings.ComparisonCode }, Request.Scheme)!;
+      <section class="card discovery-panel"><h2>سلیقه‌هامون شبیه‌ان؟</h2><p>این لینک را فقط برای کسی بفرست که می‌خواهی ترجیح‌های مستقیم و غیرخصوصی‌تان را مقایسه کنید. او هم باید وارد حساب شود و مقایسه را فعال کند. هر دو طرف می‌توانند همین مقایسه را ببینند.</p><input class="share-link" value="@link" readonly dir="ltr" aria-label="لینک مقایسه" /><button class="button button-outline" type="button" data-discovery-share="@link">کپی یا ارسال لینک مقایسه</button><p data-share-status role="status"></p></section> }
+    <details class="card discovery-panel"><summary>بازبینی پاسخ‌های تکمیلی و سؤال‌های ردشده</summary><ul class="discovery-answer-list">@foreach (var answer in Model.View.Answers) { <li><span>@answer.Prompt <small>@(answer.IsSkipped ? "ردشده / پنهان" : "پاسخ ثبت‌شده")</small></span><a asp-page="Question" asp-route-key="@answer.QuestionKey">ویرایش</a></li> }</ul></details>
+    <details class="card discovery-panel"><summary>لینک عمومیِ یک فکت</summary><p>استوری شخصیت فقط از فکت‌های تأییدشده ساخته می‌شه. اگر بخوای، می‌تونی جداگانه اجازهٔ انتشار یک فکت رو با لینک عمومی بدی.</p>
+    <ul class="discovery-answer-list">@foreach (var fact in analysis.Facts.Where(f => f.CanShare && !f.Sensitive && f.Decision != AnalysisDecisionState.Rejected))
+    { <li><span>@fact.Emoji @fact.Title
+        @if (fact.ShareCode is not null) { <a asp-page="/Ui/Fact" asp-route-code="@fact.ShareCode">دیدن فکت منتشرشده</a> }
+        <form method="post" asp-page="Facts" asp-page-handler="Share"><input type="hidden" name="key" value="@fact.Id" /><input type="hidden" name="allow" value="@(fact.ShareCode is null ? "true" : "false")" /><button class="button button-outline">@(fact.ShareCode is null ? "اجازهٔ انتشار همین فکت" : "لغو انتشار همین فکت")</button></form></span></li> }</ul></details>
+}
+<section class="card discovery-panel" id="consents"><span class="eyebrow">انتخاب با توئه</span><h2>@(settings?.Enabled == true ? "اجازه‌ها و حریم خصوصی" : "کشف خصوصی رو شروع کنیم؟")</h2><p>با فعال‌سازی، پاسخ‌های شناخته‌شدهٔ بازی فعلی‌ات هم تحلیل می‌شوند. پیش‌فرض همه‌چیز خصوصی است؛ انتشار هر فکت اجازهٔ جدا می‌خواهد.</p>
+<form method="post" asp-page="Index" asp-page-handler="Configure" class="consent-form"><input type="hidden" name="version" value="@settings?.Version" />
+<label><input type="checkbox" name="enabled" value="true" checked="@(settings?.Enabled == true)" /><span><strong>تحلیل خصوصی پاسخ‌های من</strong><small>ترجیحات و برداشت‌ها را فقط در حساب خودم ببینم.</small></span></label>
+<label><input type="checkbox" name="comparison" value="true" checked="@(settings?.AllowComparison == true)" /><span><strong>مقایسهٔ دوطرفه با لینک اختصاصی</strong><small>ترجیحات مستقیم و غیرحساسِ مشترک برای هر دو نفر قابل مشاهده می‌شوند.</small></span></label>
+<label><input type="checkbox" name="aggregateSharing" value="true" checked="@(settings?.AllowAggregateSharing == true)" /><span><strong>علایق مشترکم در استوریِ بی‌نام دوستان</strong><small>فقط انتخاب‌های مستقیم و غیرخصوصیِ ثبت‌شده در کشف من؛ جمع‌بندی با حداقل ۵ دوستِ موافق، بدون اسم یا پاسخ تک‌تک افراد. این اجازه از مقایسهٔ خصوصی جداست. تصویر منتشرشده قابل پس‌گرفتن نیست.</small></span></label>
+<label><input type="checkbox" name="relationships" value="true" checked="@(settings?.AllowRelationships == true)" /><span><strong>سؤال‌های اختیاری احساسات و روابط</strong><small>در بازی دوستان یا مقایسه نمایش داده نمی‌شوند. برداشتن تیک، پاسخ‌های این دسته را حذف می‌کند.</small></span></label>
+<label><input type="checkbox" name="mbti" value="true" checked="@(settings?.AllowMbti == true)" /><span><strong>تخمین سرگرم‌کننده MBTI</strong><small>تست رسمی نیست. خاموش کردن، پاسخ‌های اختصاصی این بخش را حذف می‌کند.</small></span></label>
+<p class="field-hint">تغییر اجازه‌ها لینک فکت‌های منتشرشده را لغو می‌کند. خاموش کردن مقایسه، لینک مقایسهٔ قبلی را هم باطل می‌کند. تصویر دانلودشده از دستگاه دیگران قابل پس‌گرفتن نیست.</p><button class="button button-primary">ذخیره انتخاب‌های من</button></form></section>
+@if (settings is not null)
+{ <details class="card discovery-panel"><summary>حذف داده‌های کشف من</summary><p>پاسخ‌های تکمیلی، اجازه‌ها، تأییدها و لینک‌های انتشار حذف می‌شوند. بازی‌ها و پاسخ‌های ثبت‌شدهٔ دوستان حفظ می‌شوند؛ فعال‌سازی دوباره می‌تواند پاسخ‌های بازی فعلی را دوباره تحلیل کند.</p><form method="post" asp-page="Index" asp-page-handler="Reset"><label><input type="checkbox" name="confirmReset" value="true" required /> حذف داده‌های کشف را تأیید می‌کنم</label><button class="button button-outline">حذف و غیرفعال‌سازی کشف</button></form></details> }
+
+@section Scripts { <script src="~/friendship/discovery.js" asp-append-version="true" defer></script> }

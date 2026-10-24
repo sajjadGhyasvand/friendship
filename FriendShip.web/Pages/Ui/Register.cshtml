@@ -1,0 +1,121 @@
+﻿@page
+
+@{
+    ViewData["Title"] = "ساخت حساب اختیاری";
+}
+
+<div class="auth-preview">
+    <a class="breadcrumb" href="@Url.Content("~/Ui/Rooms")">
+        <span aria-hidden="true">→</span>
+        برگشت به بازی‌ها
+    </a>
+
+    <section class="card">
+        <span class="eyebrow">بازی بدون حساب هم ممکنه</span>
+
+        <h1>اگه دوست داشتی، عضو شو</h1>
+
+        <p class="auth-description">
+            حساب کاربری برای داشتن پروفایل و نگهداری سابقه است؛
+            شرط شرکت در بازی نیست.
+        </p>
+
+        <a class="button button-primary auth-wide"
+           href="@Url.Content("~/Ui/Rooms/Join")">
+            فعلاً بدون ثبت‌نام بازی می‌کنم
+            <span aria-hidden="true">←</span>
+        </a>
+
+        <div class="auth-divider">
+            <span>ساخت حساب اختیاری</span>
+        </div>
+
+        <form data-account-demo="register">
+            <fieldset class="auth-fields" disabled>
+                <div class="auth-field">
+                    <label for="register-name">نام نمایشی</label>
+                    <input id="register-name"
+                           type="text"
+                           autocomplete="nickname"
+                           minlength="2"
+                           maxlength="40"
+                           aria-describedby="register-name-help"
+                           required />
+
+                    <small id="register-name-help">
+                        لازم نیست نام واقعی‌ات باشد.
+                    </small>
+                </div>
+
+                <div class="auth-field">
+                    <label for="register-email">ایمیل</label>
+                    <input id="register-email"
+                           type="email"
+                           autocomplete="email"
+                           dir="ltr"
+                           placeholder="name@example.com"
+                           maxlength="254"
+                           required />
+                </div>
+
+                <div class="auth-field">
+                    <label for="register-password">رمز عبور</label>
+                    <input id="register-password"
+                           type="password"
+                           autocomplete="new-password"
+                           dir="ltr"
+                           minlength="8"
+                           aria-describedby="register-password-help"
+                           data-new-password
+                           required />
+
+                    <small id="register-password-help">
+                        فقط برای تست فرم: حداقل ۸ نویسه.
+                        سیاست نهایی رمز هنگام اتصال به سرویس مشخص می‌شود.
+                    </small>
+                </div>
+
+                <div class="auth-field">
+                    <label for="register-confirm">تکرار رمز عبور</label>
+                    <input id="register-confirm"
+                           type="password"
+                           autocomplete="new-password"
+                           dir="ltr"
+                           data-confirm-password
+                           required />
+                </div>
+
+                <button class="button button-outline auth-wide"
+                        type="submit">
+                    بررسی فرم ثبت‌نام — نمایشی
+                </button>
+            </fieldset>
+
+            <p class="auth-message"
+               role="status"
+               aria-live="polite"
+               data-account-message></p>
+        </form>
+
+        <p class="auth-switch">
+            قبلاً حساب ساختی؟
+            <a href="@Url.Content("~/Ui/Login")">ورود</a>
+        </p>
+    </section>
+
+    <aside class="demo-notice">
+        این فرم حساب واقعی نمی‌سازد و اطلاعاتی ذخیره نمی‌کند.
+        برای آزمایش از ایمیل و رمز نمونه استفاده کن.
+    </aside>
+
+    <noscript>
+        <p class="demo-notice">
+            فرم نمایشی به جاوااسکریپت نیاز دارد؛ لینک ادامه بدون ثبت‌نام فعال است.
+        </p>
+    </noscript>
+</div>
+
+@section Scripts {
+    <script src="@Url.Content("~/friendship/account-demo.js")"
+            defer></script>
+}

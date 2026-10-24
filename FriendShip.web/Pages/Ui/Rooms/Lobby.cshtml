@@ -1,0 +1,175 @@
+﻿@page
+@model FriendShip.Web.Pages.Ui.Rooms.LobbyModel
+@using FriendShip.Domain.Rooms
+
+@{
+    ViewData["Title"] = Model.Room.Title;
+
+    var isOpen = Model.Room.Status == RoomStatus.Open;
+    var isFull = Model.Room.ParticipantCount >= Model.Room.MaxParticipants;
+}
+
+<a class="breadcrumb" asp-page="/Ui/Index">
+    <span aria-hidden="true">→</span>
+    برگشت به خانه
+</a>
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">چالش شناخت دوست‌ها</span>
+        <h1>@Model.Room.Title</h1>
+        <p>چقدر @Model.Room.OwnerName رو می‌شناسی؟</p>
+    </div>
+
+    <span class="status @(isOpen ? "status-open" : "status-draft")">
+        @Model.StatusText
+    </span>
+</div>
+
+<div class="lobby-layout">
+    <section class="card" aria-labelledby="lobby-title">
+        <div class="lobby-summary">
+            <span class="lobby-symbol" aria-hidden="true">🎮</span>
+
+            <div>
+                <h2 id="lobby-title">@Model.Room.Title</h2>
+                <p>میزبان: @Model.Room.OwnerName</p>
+            </div>
+        </div>
+
+        <dl class="lobby-facts">
+            <div>
+                <dt>تعداد سؤال</dt>
+                <dd>@Model.Room.QuestionCount سؤال</dd>
+            </div>
+
+            <div>
+                <dt>شرکت‌کننده‌ها</dt>
+                <dd>
+                    @Model.Room.ParticipantCount از @Model.Room.MaxParticipants نفر
+                </dd>
+            </div>
+
+            <div>
+                <dt>حالت بازی</dt>
+                <dd>
+                    @(Model.Room.Mode == GameMode.Speed ? "سرعتی" : "کلاسیک")
+                </dd>
+            </div>
+
+            <div>
+                <dt>زمان هر سؤال</dt>
+                <dd>
+                    @if (Model.Room.TimeLimitSeconds is int seconds)
+                    {
+                        <span>@seconds ثانیه</span>
+                    }
+                    else
+                    {
+                        <span>بدون محدودیت</span>
+                    }
+                </dd>
+            </div>
+        </dl>
+
+        <div class="section">
+            <h3>قبل از شروع</h3>
+
+            <ol class="help-list">
+                <li>
+                    <div>
+                        <strong>جواب میزبان را حدس بزن</strong>
+                        گزینه‌ای را انتخاب کن که فکر می‌کنی میزبان انتخاب کرده.
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <strong>انتخابت را با دقت ثبت کن</strong>
+                        پاسخ ثبت‌شده قابل تغییر نیست.
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <strong>زمان را در نظر بگیر</strong>
+                        در بازی زمان‌دار، تازه‌سازی صفحه زمان را از نو شروع نمی‌کند.
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="lobby-actions">
+            @if (Model.Room.IsOwner)
+            {
+                <p>
+                    این بازی توئه؛ لینک دعوت را برای دوستات بفرست.
+                </p>
+
+                <a class="button button-primary"
+                   asp-page="/Ui/Rooms/Manage"
+                   asp-route-code="@Model.Room.Code">
+                    مدیریت بازی
+                </a>
+            }
+            else if (isOpen)
+            {
+                @if (isFull)
+                {
+                    <p role="status">
+                        ظرفیت بازی پر است. اگر قبلاً وارد شده‌ای،
+                        از بخش ورود، وضعیت بازی خودت را بررسی کن.
+                    </p>
+                }
+
+                <a class="button button-primary"
+                   asp-page="/Ui/Rooms/Join"
+                   asp-route-code="@Model.Room.Code">
+                    @(isFull ? "بررسی ورود قبلی" : "ورود به چالش")
+                    <span aria-hidden="true">←</span>
+                </a>
+            }
+            else
+            {
+                <p role="status">
+                    این بازی در حال حاضر شرکت‌کننده‌ی جدید نمی‌پذیرد.
+                </p>
+            }
+        </div>
+
+        @if (!Model.Room.IsOwner &&
+             Model.Room.Status != RoomStatus.Cancelled &&
+             Model.Room.Status != RoomStatus.Draft)
+        {
+            <div class="section">
+                <a class="button button-outline"
+                   asp-page="/Ui/Play"
+                   asp-route-code="@Model.Room.Code">
+                    قبلاً وارد شده‌ام؛ بررسی بازی یا نتیجه
+                </a>
+            </div>
+        }
+    </section>
+
+    <aside class="card">
+        <h2>اطلاعات بازی</h2>
+
+        <p>میزبان: <strong>@Model.Room.OwnerName</strong></p>
+        <p>کد بازی: <strong dir="ltr">@Model.Room.Code</strong></p>
+        <p>
+            پایان اعتبار به وقت UTC:
+            <time datetime="@Model.Room.ExpiresAt.ToString("yyyy-MM-ddTHH:mm:ss")Z">
+                @Model.Room.ExpiresAt.ToString("yyyy/MM/dd HH:mm")
+            </time>
+        </p>
+
+        <div class="privacy-note">
+            برای شرکت در بازی نیازی به ثبت‌نام حساب نیست.
+            اطلاعات این صفحه هنگام بازشدن یا تازه‌سازی دریافت می‌شوند.
+        </div>
+
+        <a class="button button-outline"
+           asp-page="/Ui/Rooms/Lobby"
+           asp-route-code="@Model.Room.Code">
+            تازه‌سازی وضعیت
+        </a>
+    </aside>
+</div>

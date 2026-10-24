@@ -1,0 +1,255 @@
+﻿@page
+@model FriendShip.web.Pages.Ui.ProfileModel
+@using FriendShip.Application.Services
+
+@{
+    ViewData["Title"] = "پروفایل من";
+    ViewData["PageKind"] = "profile";
+}
+@if (TempData["ProfileSaved"] is string savedMessage)
+{
+    <p class="auth-message" role="status">@savedMessage</p>
+}
+@if (Model.ErrorMessage is not null)
+{
+    <section class="card">
+        <h1>پروفایل در دسترس نیست</h1>
+        <p role="alert">@Model.ErrorMessage</p>
+
+        <a class="button button-outline"
+           asp-page="/Ui/Profile">
+            تلاش دوباره
+        </a>
+    </section>
+}
+else if (Model.Profile is { IsOwnProfile: true } profile)
+{
+    <div class="profile-cover" aria-hidden="true"></div>
+    <a class="discovery-entry card" asp-page="/Ui/Discover/Index"><span class="entry-spark" aria-hidden="true">✦</span><span><strong>کشف من</strong><small>علایق، برداشت‌های تقریبی و فکت‌های خودت</small></span><svg class="icon"><use href="#i-arrow" /></svg></a>
+
+    <section class="profile-header" aria-labelledby="profile-title">
+        <div class="profile-heading-row">
+            <div class="profile-identity">
+                <div class="profile-avatar" aria-hidden="true"><img src="~/images/avatars/friendship-boy.small.png" width="104" height="104" alt="" /></div>
+
+                <div class="profile-name">
+                    <h1 id="profile-title">@profile.DisplayName</h1>
+                    <p>خلاصه‌ی فعالیت تو در فرندشیپ</p>
+                </div>
+            </div>
+        </div>
+        <a class="button button-outline"
+   asp-page="/Ui/EditProfile">
+    ویرایش پروفایل
+</a>
+        @if (!string.IsNullOrWhiteSpace(profile.Bio))
+        {
+            <p class="profile-bio">@profile.Bio</p>
+        }
+    </section>
+
+    <div class="metric-grid" aria-label="آمار پروفایل">
+        <div class="card metric-card">
+            <strong class="metric-green">@profile.QuizzesPlayed</strong>
+            <span>بازی تکمیل‌شده</span>
+        </div>
+
+        <div class="card metric-card">
+            <strong>@profile.RoomsCreated</strong>
+            <span>دور ساخته‌شده، بدون لغوشده‌ها</span>
+        </div>
+
+        <div class="card metric-card">
+            <strong class="metric-purple">
+                @(profile.AveragePercent is double average
+                    ? average.ToString("0.#") + "٪"
+                    : "—")
+            </strong>
+            <span>میانگین درصد شناخت</span>
+        </div>
+
+        <div class="card metric-card">
+            <strong class="metric-green">
+                @(profile.BestPercent is int best
+                    ? best.ToString() + "٪"
+                    : "—")
+            </strong>
+            <span>بهترین درصد شناخت</span>
+        </div>
+
+        <div class="card metric-card">
+            <strong class="metric-gold">@profile.Achievements.Count</strong>
+            <span>نشان دریافت‌شده</span>
+        </div>
+    </div>
+
+    @if (profile.AveragePercent is null)
+    {
+        <p class="demo-notice">
+            میانگین پس از حداقل
+            @ResultsService.MinCompletedForAverage
+            بازی تکمیل‌شده‌ی معتبر نمایش داده می‌شود.
+        </p>
+    }
+
+    <div class="section profile-columns">
+        <section class="card" aria-labelledby="profile-badges-title">
+            <h2 id="profile-badges-title">ویترین نشان‌ها</h2>
+
+            @if (profile.Achievements.Count == 0)
+            {
+                <p>هنوز نشانی دریافت نکرده‌ای.</p>
+            }
+            else
+            {
+                <div class="profile-badges">
+                    @foreach (var achievement in profile.Achievements)
+                    {
+                        <div class="profile-badge">
+                            <span aria-hidden="true">@achievement.Emoji</span>
+                            <strong>@achievement.Title</strong>
+                            <small>@achievement.Description</small>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="card" aria-labelledby="profile-info-title">
+            <h2 id="profile-info-title">اطلاعات حساب</h2>
+
+            <dl class="profile-info">
+                <div>
+                    <dt>نام نمایشی</dt>
+                    <dd>@profile.DisplayName</dd>
+                </div>
+
+                <div>
+                    <dt>ایمیل</dt>
+                    <dd>
+                        @if (!string.IsNullOrWhiteSpace(profile.Email))
+                        {
+                            <bdi>@profile.Email</bdi>
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>تاریخ عضویت</dt>
+                    <dd>
+                        @profile.JoinedAt.ToString(
+                            "yyyy/MM/dd",
+                            System.Globalization.CultureInfo.InvariantCulture)
+                        <small>میلادی، UTC</small>
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>نمایش عمومی پروفایل</dt>
+                    <dd>@(profile.IsPublic ? "فعال" : "غیرفعال")</dd>
+                </div>
+            </dl>
+
+            <div class="privacy-note">
+                ایمیل، سابقه‌ی بازی و فهرست دورهای این صفحه
+                فقط برای صاحب حساب نمایش داده می‌شوند.
+            </div>
+        </section>
+    </div>
+
+    <section class="section card" aria-labelledby="history-title">
+        <h2 id="history-title">بازی‌های اخیر</h2>
+
+        <p>
+            حداکثر @ProfileService.RecentItemsLimit بازی اخیر نمایش داده می‌شود.
+            دورهای لغوشده در این فهرست نیستند.
+        </p>
+
+        @if (profile.History.Count == 0)
+        {
+            <p>هنوز بازی تکمیل‌شده‌ای برای این حساب ثبت نشده است.</p>
+        }
+        else
+        {
+            <ul class="live-review-list">
+                @foreach (var game in profile.History)
+                {
+                    <li class="live-review-item">
+                        <h3>@game.RoomTitle</h3>
+                        <p>میزبان: @game.OwnerName</p>
+
+                        <p>
+                            <strong>@game.Percent٪</strong>
+                            — @game.TierEmoji @game.TierTitle
+                        </p>
+
+                        <p>
+                            تاریخ تکمیل:
+                            @game.CompletedAt.ToString(
+                                "yyyy/MM/dd HH:mm",
+                                System.Globalization.CultureInfo.InvariantCulture)
+                            <small>میلادی، UTC</small>
+                        </p>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="section card" aria-labelledby="created-title">
+        <h2 id="created-title">دورهای اخیر من</h2>
+
+        <p>
+            حداکثر @ProfileService.RecentItemsLimit دور اخیر،
+            شامل دورهای لغوشده.
+        </p>
+
+        @if (profile.Created.Count == 0)
+        {
+            <p>هنوز بازی خودت رو نساختی.</p>
+        }
+        else
+        {
+            <ul class="live-review-list">
+                @foreach (var room in profile.Created)
+                {
+                    <li class="live-review-item">
+                        <h3>@room.Title</h3>
+                        <p>شرکت‌کننده‌ها: @room.ParticipantCount</p>
+
+                        <p>
+                            تاریخ ساخت:
+                            @room.CreatedAt.ToString(
+                                "yyyy/MM/dd",
+                                System.Globalization.CultureInfo.InvariantCulture)
+                            <small>میلادی، UTC</small>
+                        </p>
+
+                        <a class="button button-outline"
+                           asp-page="/Ui/Rooms/Manage"
+                           asp-route-code="@room.Code">
+                            مدیریت بازی
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="section invite-banner">
+        <div>
+            <h2>یه چالش تازه شروع کنیم؟</h2>
+            <p>بازی خودت رو بساز و دوستات رو دعوت کن.</p>
+        </div>
+
+        <a class="button button-primary"
+           asp-page="/Ui/Rooms/Create">
+            ساخت بازی
+            <span aria-hidden="true">←</span>
+        </a>
+    </section>
+}

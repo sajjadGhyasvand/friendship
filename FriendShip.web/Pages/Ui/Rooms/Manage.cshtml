@@ -1,0 +1,160 @@
+﻿@page "{code}"
+@model FriendShip.Web.Pages.Ui.Rooms.ManageModel
+@using FriendShip.Domain.Rooms
+
+@{
+    ViewData["Title"] = Model.Room.Title;
+
+    var status = Model.Room.Status switch
+    {
+        RoomStatus.Draft => "پیش‌نویس",
+        RoomStatus.Open => "باز",
+        RoomStatus.Closed => "بسته‌شده",
+        RoomStatus.Expired => "منقضی‌شده",
+        RoomStatus.Cancelled => "لغوشده",
+        _ => "نامشخص"
+    };
+
+    var inviteUrl = Url.Page(
+        "/Ui/Rooms/Lobby",
+        pageHandler: null,
+        values: new { code = Model.Room.Code },
+        protocol: Request.Scheme);
+}
+
+<section class="card">
+    <h1>@Model.Room.Title</h1>
+    <p>وضعیت: @status</p>
+    <p>کد بازی: <strong dir="ltr">@Model.Room.Code</strong></p>
+    <p>
+        شرکت‌کننده‌ها:
+        @Model.Room.ParticipantCount از @Model.Room.MaxParticipants
+    </p>
+    <p>
+        پاسخ‌های ثبت‌شده:
+        @Model.Room.AnsweredCount از @Model.Room.Questions.Count
+    </p>
+    <a class="button button-outline"
+   asp-page="/Ui/Rooms/Insights"
+   asp-route-code="@Model.Code">
+    آمار بازی
+</a>
+    @if (!string.IsNullOrWhiteSpace(Model.Notice))
+    {
+        <p role="status">@Model.Notice</p>
+    }
+
+    <div asp-validation-summary="All" role="alert"></div>
+</section>
+
+@foreach (var question in Model.Room.Questions)
+{
+    <section class="card">
+        <p>@question.CategoryIcon @question.CategoryName</p>
+        <h2>@question.Order. @question.Text</h2>
+
+        @if (Model.Room.Status == RoomStatus.Draft)
+        {
+            <form method="post"
+                  asp-page-handler="Answer"
+                  asp-route-code="@Model.Room.Code">
+
+                <input type="hidden"
+                       name="roomQuestionId"
+                       value="@question.Id" />
+
+                @foreach (var option in question.Options)
+                {
+                    <div class="field">
+                        <label>
+                            <input type="radio"
+                                   name="optionId"
+                                   value="@option.Id"
+                                   checked="@(question.OwnerAnswerOptionId == option.Id)"
+                                   required />
+                            @option.Text
+                        </label>
+                    </div>
+                }
+
+                <button type="submit" class="button button-primary">
+                    ذخیره‌ی این پاسخ
+                </button>
+            </form>
+        }
+        else
+        {
+            var answer = question.Options.FirstOrDefault(
+                o => o.Id == question.OwnerAnswerOptionId);
+
+            <p>پاسخ تو: @(answer?.Text ?? "ثبت نشده")</p>
+        }
+    </section>
+}
+
+@if (Model.Room.Status == RoomStatus.Draft)
+{
+    <section class="card">
+        <h2>انتشار بازی</h2>
+        <p>بعد از انتشار، سؤال‌ها و جواب‌ها قابل تغییر نیستند.</p>
+
+        @if (Model.Room.AnsweredCount == Model.Room.Questions.Count)
+        {
+            <form method="post"
+                  asp-page-handler="Publish"
+                  asp-route-code="@Model.Room.Code">
+                <button type="submit" class="button button-primary">
+                    انتشار بازی
+                </button>
+            </form>
+        }
+        else
+        {
+            <p>ابتدا پاسخ همه‌ی سؤال‌ها را ذخیره کن.</p>
+        }
+    </section>
+}
+else if (Model.Room.Status == RoomStatus.Open)
+{
+    <section class="card">
+        <h2>بازی آماده است</h2>
+        <div class="field">
+    <label for="invite-url">لینک دعوت دوست‌ها</label>
+
+    <input id="invite-url"
+           class="input"
+           type="url"
+           value="@inviteUrl"
+           dir="ltr"
+           readonly />
+
+    <small>این لینک را کپی کن و برای دوستات بفرست.</small>
+</div>
+<a class="button button-outline"
+   asp-page="/Ui/Rooms/Insights"
+   asp-route-code="@Model.Code">
+    آمار بازی
+</a>
+
+<a class="button button-outline"
+   asp-page="/Ui/Rooms/Lobby"
+   asp-route-code="@Model.Room.Code">
+    مشاهده‌ی صفحه بازی
+</a>
+
+        <p>با پایان این دور، ورود و پاسخ‌گویی متوقف می‌شود و نتایج محفوظ می‌مانند.</p>
+        <a class="button button-outline"
+   asp-page="/Ui/Rooms/Leaderboard"
+   asp-route-code="@Model.Code">
+    جدول رتبه‌بندی
+</a>
+
+        <form method="post"
+              asp-page-handler="Close"
+              asp-route-code="@Model.Room.Code">
+            <button type="submit" class="button button-outline">
+                پایان این دور
+            </button>
+        </form>
+    </section>
+}

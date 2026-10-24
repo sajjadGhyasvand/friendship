@@ -1,0 +1,137 @@
+﻿@{
+    var isHost = ViewData["QuizMode"]?.ToString() == "host";
+    var mode = isHost ? "host" : "player";
+}
+
+<div data-quiz data-quiz-mode="@mode">
+    <div data-quiz-active hidden>
+        <section class="card quiz-progress-card"
+                 aria-label="پیشرفت پاسخ‌ها">
+
+            <div class="quiz-progress-heading">
+                <span data-question-counter></span>
+                <strong data-answer-counter></strong>
+            </div>
+
+            <progress class="quiz-progress"
+                      max="8"
+                      value="0"
+                      aria-label="تعداد سؤال‌های پاسخ‌داده‌شده"
+                      data-quiz-progress>
+            </progress>
+        </section>
+
+        <section class="card quiz-card"
+                 aria-labelledby="quiz-question">
+
+            <span class="quiz-category" data-question-category></span>
+
+            <h2 class="quiz-question"
+                id="quiz-question"
+                tabindex="-1"
+                data-question-title>
+            </h2>
+
+            <p class="quiz-hint">
+                @if (isHost)
+                {
+                    <text>گزینه‌ای رو انتخاب کن که بیشتر شبیه خودته.</text>
+                }
+                else
+                {
+                    <text>حدس بزن میزبان کدوم گزینه رو انتخاب می‌کنه.</text>
+                }
+            </p>
+
+            <fieldset class="quiz-options" data-quiz-options>
+                <legend class="sr-only">
+                    یکی از پاسخ‌ها را انتخاب کن
+                </legend>
+            </fieldset>
+
+            <div class="quiz-controls">
+                <button class="button button-outline"
+                        type="button"
+                        data-quiz-previous
+                        disabled>
+                    → قبلی
+                </button>
+
+                <button class="button button-primary"
+                        type="button"
+                        data-quiz-next
+                        disabled>
+                    سؤال بعدی ←
+                </button>
+            </div>
+
+            <div class="quiz-status"
+                 role="status"
+                 aria-live="polite"
+                 data-quiz-status>
+            </div>
+        </section>
+    </div>
+
+    <section class="card completion-card"
+             aria-labelledby="quiz-complete-title"
+             data-quiz-complete
+             hidden>
+
+        <div class="completion-icon" aria-hidden="true">✓</div>
+
+        <h2 id="quiz-complete-title"
+            tabindex="-1"
+            data-complete-title>
+            @(isHost ? "پاسخ‌های نمونه رو انتخاب کردی!" : "به آخر چالش نمونه رسیدی!")
+        </h2>
+
+        <p>
+            @if (isHost)
+            {
+                <text>
+                    انتخاب‌ها فقط در حافظه‌ی همین صفحه قرار دارند.
+                    هنوز اتاقی آماده یا منتشر نشده و پاسخی به سرور نرفته است.
+                </text>
+            }
+            else
+            {
+                <text>
+                    این بازی پاسخ واقعی میزبان ندارد؛ بنابراین امتیازی
+                    محاسبه نشده است. انتخاب‌ها به سرور ارسال نشده‌اند.
+                </text>
+            }
+        </p>
+
+        <div class="completion-actions">
+            @if (isHost)
+            {
+                <a class="button button-primary"
+                   href="@Url.Content("~/Ui/Rooms/Lobby")">
+                    دیدن لابی نمونه ←
+                </a>
+            }
+           else
+{
+    <a class="button button-primary"
+       href="@Url.Content("~/Ui/Results")">
+        دیدن نتیجه‌ی نمونه
+        <span aria-hidden="true">←</span>
+    </a>
+}
+
+
+            <button class="button button-outline"
+                    type="button"
+                    data-quiz-review>
+                مرور انتخاب‌ها
+            </button>
+        </div>
+    </section>
+
+    <noscript>
+        <div class="demo-notice">
+            برای نمایش سؤال‌های نمونه، JavaScript مرورگر باید فعال باشد.
+        </div>
+    </noscript>
+</div>

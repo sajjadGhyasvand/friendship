@@ -1,0 +1,104 @@
+﻿@page
+@model FriendShip.Web.Pages.Ui.Rooms.LeaderboardModel
+@using FriendShip.Domain.Scoring
+
+@{
+    ViewData["Title"] = "جدول رتبه‌بندی";
+}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">نتایج چالش دوستانه</span>
+        <h1>جدول رتبه‌بندی</h1>
+        <p>فقط بازی‌های تکمیل‌شده در این جدول قرار می‌گیرند.</p>
+    </div>
+</div>
+
+@if (Model.ErrorMessage is not null)
+{
+    <section class="card live-message">
+        <h2>جدول فعلاً قابل نمایش نیست</h2>
+        <p role="alert">@Model.ErrorMessage</p>
+
+        <a class="button button-outline"
+           asp-page="/Ui/Rooms/Join"
+           asp-route-code="@Model.Code">
+            ورود به بازی
+        </a>
+    </section>
+}
+else
+{
+    <section class="card" aria-labelledby="leaderboard-title">
+        <h2 id="leaderboard-title">رتبه‌های فعلی</h2>
+
+        @if (Model.Entries.Count == 0)
+        {
+            <div class="empty-state">
+                <h3>هنوز بازی تکمیل‌شده‌ای ثبت نشده</h3>
+                <p>بعد از پایان بازی شرکت‌کنندگان، نتایج اینجا نمایش داده می‌شوند.</p>
+            </div>
+        }
+        else
+        {
+            <div class="leaderboard-scroll">
+                <table class="leaderboard-table">
+                    <caption>
+                        @Model.Entries.Count شرکت‌کننده با بازی تکمیل‌شده
+                    </caption>
+
+                    <thead>
+                        <tr>
+                            <th scope="col">رتبه</th>
+                            <th scope="col">شرکت‌کننده</th>
+                            <th scope="col">امتیاز</th>
+                            <th scope="col">درصد شناخت</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var entry in Model.Entries)
+                        {
+                            <tr class="@(entry.IsMe ? "leaderboard-me" : null)">
+                                <td>@entry.Rank</td>
+
+                                <th scope="row">
+                                    @entry.Name
+                                    <small class="ranking-title">@(entry.Comparable == 0 ? "بدون پاسخ قابل مقایسه" : TitleCatalog.ForPercent(entry.Percent).Title)</small>
+
+                                    @if (entry.IsMe)
+                                    {
+                                        <span> — شما</span>
+                                    }
+                                </th>
+
+                                <td>@entry.Score</td>
+                                <td>@(entry.Comparable == 0 ? "داده کافی نیست" : entry.Percent + "٪")<small class="ranking-title">@entry.Correct از @(entry.Comparable ?? entry.Total) پاسخ قابل محاسبه صحیح · @entry.Total سؤال</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <p>
+                رتبه‌ها بر اساس نتایج فعلی هستند و با تکمیل بازی دیگران
+                ممکن است تغییر کنند.
+                رتبه با امتیاز پاسخ‌های درست تعیین می‌شود؛ درصدِ پاسخ‌های کمتر به‌تنهایی معیار رتبه نیست.
+            </p>
+        }
+    </section>
+}
+
+<div class="live-actions">
+    <a class="button button-primary"
+       asp-page="/Ui/Rooms/Leaderboard"
+       asp-route-code="@Model.Code">
+        تازه‌سازی جدول
+    </a>
+
+    <a class="button button-outline"
+       asp-page="/Ui/Rooms/Lobby"
+       asp-route-code="@Model.Code">
+        برگشت به بازی
+    </a>
+</div>

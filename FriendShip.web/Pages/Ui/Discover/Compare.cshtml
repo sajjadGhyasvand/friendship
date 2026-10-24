@@ -1,0 +1,15 @@
+@page "{code?}"
+@model FriendShip.Web.Pages.Ui.Discover.CompareModel
+@{ ViewData["Title"] = "مقایسهٔ سلیقه‌ها"; ViewData["PageKind"] = "discovery"; }
+@if (Model.Comparison is not { } comparison)
+{ <section class="card discovery-panel"><h1>مقایسه در دسترس نیست</h1><p>هر دو نفر باید در «کشف من» تحلیل و مقایسه را فعال کرده باشند؛ لینک هم باید معتبر و متعلق به فرد دیگری باشد.</p><a class="button button-primary" asp-page="Settings" asp-fragment="consents">تنظیمات کشف من</a></section> }
+else
+{
+ <section class="discovery-hero"><div><span class="eyebrow">سلیقه، از زبان خودتون</span><h1>تو و @comparison.OwnerName</h1><p>در @comparison.ComparableCount ترجیح مشترک، @comparison.SameCount انتخاب یکسان دارید. این مقایسهٔ همین انتخاب‌هاست، نه کیفیت رابطه.</p></div><img src="~/images/avatars/friendship-boy.small.png" width="140" height="149" alt="" /></section>
+ @if (comparison.ComparableCount < 3) { <p class="notice">هنوز سرنخ‌ها کم‌اند؛ این چند انتخاب، تصویر کلی سلیقه‌هاتون نیست.</p> }
+ <section class="personality-sheet"><div class="sheet-heading"><h2>یک نگاه به دنیای دوتایی‌تون</h2></div>
+ @foreach (var fact in comparison.Facts.Take(6)) { <article class="personality-row"><span class="fact-visual" aria-hidden="true">✨</span><div class="personality-copy"><h3>@fact.Category</h3><p>@fact.Text</p><small class="field-hint">بر پایهٔ @fact.SampleCount انتخاب قابل مقایسه، با اجازهٔ هر دوتون</small></div></article> }
+ @if (comparison.Facts.Count == 0) { <p>برای یک فکت معنادار، در یک موضوع حداقل دو انتخابِ قابل مقایسه لازم داریم؛ فعلاً جملهٔ الکی نمی‌سازیم.</p> }
+ </section>
+ <p class="field-hint">حدس دوستان، پاسخ‌های احساسی خصوصی و برداشت‌های شخصیتی در این مقایسه استفاده نمی‌شوند.</p><a class="button button-outline" asp-page="Question">انتخاب‌های بیشتری ثبت کنم</a>
+}
